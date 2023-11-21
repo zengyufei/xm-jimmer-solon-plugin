@@ -1,0 +1,29 @@
+server.port: 8080
+solon.app:
+  name: 'java-client'
+
+
+# 如果不引入 xm h2 plugin 则需要手动配置
+datasource.db:
+  type: "com.zaxxer.hikari.HikariDataSource"
+  driverClassName: org.h2.Driver
+  jdbcUrl: jdbc:h2:mem:test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=TRUE;IGNORECASE=TRUE;NON_KEYWORDS=user
+
+jimmer.db:
+  dialect: org.babyfish.jimmer.sql.dialect.H2Dialect
+  database-validation-mode: ERROR
+  errorTranslator:
+    disabled: false
+    debugInfoSupported: true
+  client:
+    ts:
+      path: /my-ts.zip
+    java-feign:
+      base-package: com.myapp.feign
+      path: /my-java.zip
+    first:
+      ts:
+        path: /my-ts1.zip
+    second:
+      ts:
+        path: /my-ts2.zip

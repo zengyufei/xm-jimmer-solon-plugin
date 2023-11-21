@@ -1,0 +1,17 @@
+
+export com.example.demo.user.entity.User
+    -> package com.example.demo.user.entity.dto
+
+input UserInput {
+
+    #allScalars(this)
+}
+
+specification UserSpecification {
+
+    #allScalars(this) - userId // Remove id
+
+    ge(createTime)
+
+    le(createTime)
+}

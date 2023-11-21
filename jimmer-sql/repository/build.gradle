@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+
+    api project(":model")
+
+    implementation "vip.xunmo:xm-jimmer-solon-plugin:1.0.0"
+//    api "org.babyfish.jimmer:jimmer-spring-boot-starter:${jimmerVersion}"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}

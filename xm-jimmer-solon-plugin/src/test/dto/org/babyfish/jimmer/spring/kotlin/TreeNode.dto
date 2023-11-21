@@ -1,0 +1,29 @@
+TreeNodeView {
+    name
+    flat(parent) {
+        as(^ -> parent) {
+            name
+        }
+    }
+}
+
+TreeNodeView2 {
+    #allScalars
+    flat(parent) {
+        as(^ -> parent) {
+            #allScalars
+        }
+        flat(parent) {
+            as(^ -> grandParent) {
+                #allScalars
+            }
+        }
+    }
+}
+
+specification TreeNodeSpecification {
+    like/i(name)
+    flat(parent) {
+        like/i(name) as parentName
+    }
+}

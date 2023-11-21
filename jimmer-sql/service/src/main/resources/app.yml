@@ -1,0 +1,28 @@
+
+datasource.db:
+  type: "com.zaxxer.hikari.HikariDataSource"
+  driverClassName: org.h2.Driver
+  jdbcUrl: jdbc:h2:mem:jimmer-sql;database_to_upper=true
+#  jdbcUrl: jdbc:h2:mem:test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=TRUE;IGNORECASE=TRUE;NON_KEYWORDS=user
+
+jimmer:
+  db:
+    default-enum-strategy: "ORDINAL"
+    trigger-type: "TRANSACTION_ONLY"
+    language: java
+    defaultBatchSize: 1000
+    dialect: org.babyfish.jimmer.sql.dialect.H2Dialect
+    offset-optimizing-threshold: 10
+    id-only-target-checking-level: ALL
+    show-sql: true
+    pretty-sql: true
+
+  # You can enable the following configuration line `inline-sql-variables: true`,
+  # restart the application and call some REST APIs again to see what happens
+  # inline-sql-variables: true
+
+  executor-context-prefixes:
+    - org.babyfish.jimmer.sql.example.business
+  client:
+    ts:
+      path: /ts.zip

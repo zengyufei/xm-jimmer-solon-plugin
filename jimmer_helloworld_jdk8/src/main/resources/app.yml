@@ -1,0 +1,26 @@
+server.port: 8080
+
+solon.app:
+  name: 'demo-app'
+  group: 'demo'
+
+# 如果不引入 xm h2 plugin 则需要手动配置
+datasource.db:
+  type: "com.zaxxer.hikari.HikariDataSource"
+  driverClassName: org.h2.Driver
+  jdbcUrl: jdbc:h2:mem:test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=TRUE;IGNORECASE=TRUE;NON_KEYWORDS=user
+
+jimmer.db:
+  showSql: true
+  errorTranslator:
+    disabled: true
+
+demo.cache1:
+  driverType: "redis" #驱动类型
+  keyHeader: "demo" #默认为 ${solon.app.name} ，可不配置
+  defSeconds: 30 #默认为 30，可不配置
+  server: "localhost:6379"
+  db: 0 #默认为 0，可不配置
+#  password: ""
+  idleConnectionTimeout: 10000
+  connectTimeout: 10000
