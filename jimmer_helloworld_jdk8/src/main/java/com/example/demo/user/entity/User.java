@@ -2,6 +2,7 @@ package com.example.demo.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.babyfish.jimmer.sql.*;
+import org.babyfish.jimmer.sql.meta.UserIdGenerator;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 public interface User {
 	String TABLE_NAME = "user";
 	@Id
+    @GeneratedValue(generatorType = UserIdGen.class)
 	String userId();
 
 	@Nullable
@@ -51,6 +53,7 @@ public interface User {
     @JoinColumn(name = Columns.updateId)
     User update();
 
+    @Nullable
     @Column(name = Columns.createTime)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime createTime();

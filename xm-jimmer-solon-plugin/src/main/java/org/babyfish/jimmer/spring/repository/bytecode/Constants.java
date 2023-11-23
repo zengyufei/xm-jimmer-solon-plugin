@@ -3,6 +3,7 @@ package org.babyfish.jimmer.spring.repository.bytecode;
 import org.babyfish.jimmer.Specification;
 import org.babyfish.jimmer.impl.asm.Type;
 import org.babyfish.jimmer.meta.ImmutableType;
+import org.babyfish.jimmer.spring.core.page.Pageable;
 import org.babyfish.jimmer.spring.core.page.Sort;
 import org.babyfish.jimmer.spring.repository.parser.Context;
 import org.babyfish.jimmer.spring.repository.parser.QueryMethod;
@@ -13,7 +14,6 @@ import org.babyfish.jimmer.sql.fetcher.Fetcher;
 import org.babyfish.jimmer.sql.kt.KSqlClient;
 import org.babyfish.jimmer.sql.runtime.JSqlClientImplementor;
 
-import java.awt.print.Pageable;
 import java.lang.reflect.Method;
 
 interface Constants {

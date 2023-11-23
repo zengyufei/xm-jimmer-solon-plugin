@@ -7,6 +7,18 @@ input UserInput {
     #allScalars(this)
 }
 
+input UserGetInput {
+
+    @javax.validation.constraints.NotNull
+    userId
+}
+
+input UserDelInput {
+
+    @javax.validation.constraints.NotNull
+    userId
+}
+
 specification UserSpecification {
 
     #allScalars(this) - userId // Remove id

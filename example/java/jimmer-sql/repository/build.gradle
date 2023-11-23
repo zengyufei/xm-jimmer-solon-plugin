@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
+}
+
+dependencies {
+
+    api project(":model")
+
+    implementation "vip.xunmo:xm-jimmer-solon-plugin:${xmJimmerVersion}"
+    implementation "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
+//    api "org.babyfish.jimmer:jimmer-spring-boot-starter:${jimmerVersion}"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}

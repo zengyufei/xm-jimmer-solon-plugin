@@ -36,7 +36,7 @@
 
         <dependency>
             <groupId>vip.xunmo</groupId>
-            <artifactId>jimmer-solon-plugin</artifactId>
+            <artifactId>xm-jimmer-solon-plugin</artifactId>
             <version>1.0.0</version>
         </dependency>
 

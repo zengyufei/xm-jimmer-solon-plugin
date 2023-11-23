@@ -1,17 +1,27 @@
 package com.example.demo.user.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.entity.UserFetcher;
 import com.example.demo.user.entity.UserProps;
+import com.example.demo.user.entity.dto.UserDelInput;
+import com.example.demo.user.entity.dto.UserGetInput;
+import com.example.demo.user.entity.dto.UserInput;
+import com.example.demo.user.entity.dto.UserSpecification;
 import com.example.demo.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.babyfish.jimmer.client.FetchBy;
+import org.babyfish.jimmer.client.ThrowsAll;
 import org.babyfish.jimmer.spring.core.annotation.Db;
+import org.babyfish.jimmer.spring.core.page.Page;
+import org.babyfish.jimmer.spring.core.page.PageRequest;
+import org.babyfish.jimmer.spring.model.SortUtils;
 import org.babyfish.jimmer.sql.JSqlClient;
 import org.babyfish.jimmer.sql.fetcher.Fetcher;
-import org.noear.solon.annotation.Controller;
-import org.noear.solon.annotation.Get;
-import org.noear.solon.annotation.Mapping;
+import org.babyfish.jimmer.sql.runtime.SaveErrorCode;
+import org.jetbrains.annotations.Nullable;
+import org.noear.solon.annotation.*;
 import org.noear.solon.validation.annotation.Valid;
 
 import java.util.List;
@@ -22,95 +32,77 @@ import java.util.List;
 @Mapping("/user")
 public class UserController {
 
-
-    @Db
-    private JSqlClient sqlClient;
-
     @Db
     private UserRepository userRepository;
 
     private static final Fetcher<User> SIMPLE_FETCHER =
             UserFetcher.$
-                    .userName();
+                    .userName()
+                    .status()
+                    .isSystemDefault();
 
-    @Get
+    private static final Fetcher<User> DEFAULT_FETCHER =
+            UserFetcher.$
+                    .allScalarFields();
+    private static final Fetcher<User> GET_FETCHER =
+            UserFetcher.$
+                    .allScalarFields();
+
+    @Post
     @Mapping("/simpleList")
-    public List<@FetchBy("SIMPLE_FETCHER") User> findSimpleAuthors() { // ❶ ❷ ❸
-        return userRepository.findAll(SIMPLE_FETCHER, UserProps.USER_NAME);
+    public List<@FetchBy("SIMPLE_FETCHER") User> simpleList() {
+        return userRepository.findAll(SIMPLE_FETCHER, UserProps.USER_NAME, UserProps.STATUS, UserProps.IS_SYSTEM_DEFAULT);
     }
-//
-//    @Post
-//    @Mapping("/list")
-//    public Page<User> list(@Validated UserQuery query, PageRequest pageRequest) throws Exception {
-//        final String userId = query.getUserId();
-//        final String userName = query.getUserName();
-//        final LocalDateTime beginCreateTime = query.getBeginCreateTime();
-//        final LocalDateTime endCreateTime = query.getEndCreateTime();
-//        return userRepository.pager(pageRequest)
-//                .execute(sqlClient.createQuery(TABLE)
-//                        // 根据 用户id 查询
-//                        .whereIf(StrUtil.isNotBlank(userId), () -> TABLE.userId().eq(userId))
-//                        // 根据 用户名称 模糊查询
-//                        .whereIf(StrUtil.isNotBlank(userName), () -> TABLE.userName().like(userName))
-//                        // 根据 创建时间 大于等于查询
-//                        .whereIf(beginCreateTime != null, () -> TABLE.createTime().ge(beginCreateTime))
-//                        // 根据 创建时间 小于等于查询
-//                        .whereIf(endCreateTime != null, () -> TABLE.createTime().le(endCreateTime))
-//                        // 默认排序 创建时间 倒排
-//                        .orderBy(TABLE.createTime().desc())
-//                        .select(TABLE.fetch(
-//                                // 查询 用户表 所有属性（非对象）
-//                                FETCHER.allScalarFields()
-//                                        // 查询 创建者 对象，只显示 姓名
-//                                        .create(UserFetcher.$.userName())
-//                                        // 查询 修改者 对象，只显示 姓名
-//                                        .update(UserFetcher.$.userName())
-//                        )));
-//    }
-//
-//    @Post
-//    @Mapping("/getById")
-//    public User getById(@NotNull @NotBlank String id) throws Exception {
-////        final User user = userRepository.findById(id).orElse(null);
-//        final User user = this.sqlClient.findById(User.class, id);
-//        return user;
-//    }
-//
-//    @Post
-//    @Mapping("/add")
-//    public User add(@Validated UserInput input) throws Exception {
-////        final User modifiedEntity = userRepository.save(input);
-//        final SimpleSaveResult<User> result = this.sqlClient.save(input);
-//        final User modifiedEntity = result.getModifiedEntity();
-//        return modifiedEntity;
-//    }
-//
-//    @Post
-//    @Mapping("/update")
-//    public User update(@Validated UserInput input) throws Exception {
-////        final User modifiedEntity = userRepository.update(input);
-//        final SimpleSaveResult<User> result = this.sqlClient.update(input);
-//        final User modifiedEntity = result.getModifiedEntity();
-//        return modifiedEntity;
-//    }
-//
-//    @Post
-//    @Mapping("/deleteByIds")
-//    @Tran
-//    public int deleteByIds(List<String> ids) throws Exception {
-////        final int totalAffectedRowCount = userRepository.deleteByIds(ids, DeleteMode.AUTO);
-//        final DeleteResult result = this.sqlClient.deleteByIds(User.class, ids);
-//        final int totalAffectedRowCount = result.getTotalAffectedRowCount();
-//        return totalAffectedRowCount;
-//    }
-//
-//    /**
-//     * 主动抛出异常 - 用于测试
-//     */
-//    @Get
-//    @Mapping("/exception")
-//    public Boolean exception() throws Exception {
-//        throw new NullPointerException("主动抛出异常 - 用于测试 " + DateUtil.now());
-//    }
+
+    @Post
+    @Mapping("/list")
+    public Page<@FetchBy("DEFAULT_FETCHER") User> list(
+            @Param(defaultValue = "0") int pageIndex,
+            @Param(defaultValue = "5") int pageSize,
+            @Param(defaultValue = "createTime asc") String sortCode,
+            UserSpecification specification
+    ) {
+        return userRepository.find(
+                PageRequest.of(pageIndex, pageSize, SortUtils.toSort(sortCode)),
+                specification,
+                DEFAULT_FETCHER
+        );
+    }
+
+
+    @Post
+    @Mapping("/get")
+    @Nullable
+    public @FetchBy("GET_FETCHER") User getById(UserGetInput input) {
+        final String userId = input.getUserId();
+        if (StrUtil.isNotBlank(userId)) {
+            return userRepository.findNullable(userId, GET_FETCHER);
+        }
+        return null;
+    }
+
+    @Post
+    @Mapping("/add")
+    public User add(UserInput input) {
+        return userRepository.save(input);
+    }
+
+    @Post
+    @Mapping("/del")
+    public void delById(UserDelInput input) {
+        final String userId = input.getUserId();
+        if (StrUtil.isNotBlank(userId)) {
+            userRepository.deleteById(userId);
+        }
+    }
+
+    /**
+     * 主动抛出异常 - 用于测试
+     */
+    @Get
+    @Mapping("/exception")
+    public Boolean exception() throws Exception {
+        throw new NullPointerException("主动抛出异常 - 用于测试 " + DateUtil.now());
+    }
 
 }
