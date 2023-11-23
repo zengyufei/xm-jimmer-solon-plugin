@@ -1,13 +1,12 @@
 package org.babyfish.jimmer.sql.example.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.babyfish.jimmer.client.FetchBy;
 import org.babyfish.jimmer.client.ThrowsAll;
 import org.babyfish.jimmer.spring.core.annotation.Db;
-import org.babyfish.jimmer.sql.example.repository.TreeNodeRepository;
 import org.babyfish.jimmer.sql.example.model.TreeNode;
 import org.babyfish.jimmer.sql.example.model.TreeNodeDraft;
 import org.babyfish.jimmer.sql.example.model.TreeNodeFetcher;
+import org.babyfish.jimmer.sql.example.repository.TreeNodeRepository;
 import org.babyfish.jimmer.sql.example.service.dto.FlatTreeNodeView;
 import org.babyfish.jimmer.sql.example.service.dto.RecursiveTreeInput;
 import org.babyfish.jimmer.sql.fetcher.Fetcher;
@@ -30,7 +29,6 @@ import java.util.List;
  * of the framework with small examples. Therefore, this example project no longer adheres to
  * dogmatism and directly adds spring web annotations to the service class.
  */
-@Slf4j
 @Valid
 @Controller
 @Mapping("/tree")

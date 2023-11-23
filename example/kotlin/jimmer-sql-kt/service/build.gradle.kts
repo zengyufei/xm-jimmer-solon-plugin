@@ -36,7 +36,7 @@ dependencies {
 	runtimeOnly("io.lettuce:lettuce-core:6.2.0.RELEASE")
 	runtimeOnly("com.github.ben-manes.caffeine:caffeine:2.9.1")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testApi("org.springframework.boot:spring-boot-starter-test")
 }
 
 // Without this configuration, gradle command can still run.

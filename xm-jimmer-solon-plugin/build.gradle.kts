@@ -30,36 +30,36 @@ dependencyManagement {
 
 dependencies {
 
-    implementation("org.babyfish.jimmer:jimmer-sql:0.8.44")
-    implementation("org.babyfish.jimmer:jimmer-sql-kotlin:0.8.44")
-    implementation("org.babyfish.jimmer:jimmer-client:0.8.44")
+    api("org.babyfish.jimmer:jimmer-sql:0.8.44")
+    api("org.babyfish.jimmer:jimmer-sql-kotlin:0.8.44")
+    api("org.babyfish.jimmer:jimmer-client:0.8.44")
 
     testAnnotationProcessor("org.babyfish.jimmer:jimmer-apt:0.8.44")
     kspTest("org.babyfish.jimmer:jimmer-ksp:0.8.44")
 
-    implementation("org.noear:solon")
-    implementation("org.noear:solon-lib")
-    implementation("org.noear:solon.data")
-    implementation("org.noear:solon.web.cors")
-    implementation("org.noear:solon.boot.jlhttp")
-    implementation("org.noear:solon.serialization.jackson")
-    implementation("org.noear:solon.scheduling.simple")
-    implementation("org.noear:logback-solon-plugin")
-    implementation("org.noear:solon.cache.redisson")
-    implementation("cn.hutool:hutool-all:5.8.20")
+    api("org.noear:solon")
+    api("org.noear:solon-lib")
+    api("org.noear:solon.data")
+    api("org.noear:solon.web.cors")
+    api("org.noear:solon.boot.jlhttp")
+    api("org.noear:solon.serialization.jackson")
+    api("org.noear:solon.scheduling.simple")
+    api("org.noear:logback-solon-plugin")
+    api("org.noear:solon.cache.redisson")
+    api("cn.hutool:hutool-all:5.8.20")
 
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
-    testImplementation("com.zaxxer:HikariCP:4.0.3")
-    testImplementation("org.noear:solon-test")
+    testApi("com.zaxxer:HikariCP:4.0.3")
+    testApi("org.noear:solon-test")
 
     compileOnly("com.github.ben-manes.caffeine:caffeine:2.9.1")
 
-    testImplementation("org.projectlombok:lombok:1.18.30")
+    testApi("org.projectlombok:lombok:1.18.30")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
 
-    testImplementation("com.h2database:h2:2.1.212")
+    testApi("com.h2database:h2:2.1.212")
 }
 
 kotlin {

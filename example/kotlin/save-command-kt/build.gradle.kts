@@ -19,8 +19,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.babyfish.jimmer:jimmer-sql-kotlin:${jimmerVersion}")
     ksp("org.babyfish.jimmer:jimmer-ksp:${jimmerVersion}")
-    testImplementation("com.h2database:h2:2.1.212")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testApi("com.h2database:h2:2.1.212")
+    testApi("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }
 

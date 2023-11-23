@@ -28,12 +28,8 @@ subprojects {
     //公用的依赖
     dependencies {
 
-        implementation "cn.hutool:hutool-all:5.8.20"
-        implementation  "org.noear:logback-solon-plugin"
-
-        compileOnly("org.projectlombok:lombok:1.18.26")
-        annotationProcessor("org.projectlombok:lombok:1.18.26")
-        testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
+        api "cn.hutool:hutool-all:5.8.20"
+        api  "org.noear:logback-solon-plugin"
 
     }
 

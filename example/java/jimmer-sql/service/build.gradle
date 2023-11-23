@@ -10,26 +10,26 @@ repositories {
 
 dependencies {
 
-    implementation project(":repository")
+    api(project(":repository"))
 //    runtimeOnly project(":runtime")
 
-    implementation "vip.xunmo:xm-jimmer-solon-plugin:${xmJimmerVersion}"
-    implementation "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
-    implementation "org.babyfish.jimmer:jimmer-client:${jimmerVersion}"
-    implementation 'org.noear:solon'
-    implementation 'org.noear:solon-lib'
-    implementation 'org.noear:solon.web.cors'
-    implementation 'org.noear:solon.boot.smarthttp'
-    implementation 'org.noear:solon.serialization.jackson'
-    implementation 'com.zaxxer:HikariCP:4.0.3'
+    api("vip.xunmo:xm-jimmer-solon-plugin:${xmJimmerVersion}")
+    api("org.babyfish.jimmer:jimmer-sql:${jimmerVersion}")
+    api("org.babyfish.jimmer:jimmer-client:${jimmerVersion}")
+    api("org.noear:solon")
+    api("org.noear:solon-lib")
+    api("org.noear:solon.web.cors")
+    api("org.noear:solon.boot.smarthttp")
+    api("org.noear:solon.serialization.jackson")
+    api("com.zaxxer:HikariCP:4.0.3")
 
-//    implementation "org.babyfish.jimmer:jimmer-spring-boot-starter:${jimmerVersion}"
+//    api "org.babyfish.jimmer:jimmer-spring-boot-starter:${jimmerVersion}"
 
     annotationProcessor "org.babyfish.jimmer:jimmer-apt:${jimmerVersion}"
 
-//    implementation 'org.springframework.boot:spring-boot-starter-web'
+//    api 'org.springframework.boot:spring-boot-starter-web'
 
-//    implementation 'org.springdoc:springdoc-openapi-ui:1.6.13'
+//    api 'org.springdoc:springdoc-openapi-ui:1.6.13'
 
     runtimeOnly 'com.h2database:h2:2.1.212'
     runtimeOnly 'mysql:mysql-connector-java:8.0.30'
@@ -41,10 +41,13 @@ dependencies {
     testImplementation("com.zaxxer:HikariCP:4.0.3")
     testImplementation("org.noear:solon-test")
 
+    testImplementation("com.h2database:h2:2.1.212")
+
+    api("org.projectlombok:lombok:1.18.30")
     testImplementation("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
 
-    testImplementation("com.h2database:h2:2.1.212")
 }
 
 java {

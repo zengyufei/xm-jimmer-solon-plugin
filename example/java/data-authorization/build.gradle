@@ -24,8 +24,8 @@ dependencies {
     runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.8'
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.8'
 
-    testImplementation platform("org.junit:junit-bom:5.9.1")
-    testImplementation "org.junit.jupiter:junit-jupiter"
+    testApi platform("org.junit:junit-bom:5.9.1")
+    testApi "org.junit.jupiter:junit-jupiter"
 }
 
 tasks.test {

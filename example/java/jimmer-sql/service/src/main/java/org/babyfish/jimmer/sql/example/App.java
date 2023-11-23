@@ -1,10 +1,9 @@
 package org.babyfish.jimmer.sql.example;
 
-import lombok.extern.slf4j.Slf4j;
+import org.babyfish.jimmer.sql.EnableDtoGeneration;
 import org.noear.solon.Solon;
-import org.noear.solon.data.cache.CacheService;
 
-@Slf4j
+@EnableDtoGeneration
 public class App {
 
     public static void main(String[] args) {
@@ -24,10 +23,10 @@ public class App {
 			});
 
 			// 异步订阅方式，根据bean type获取Bean（已存在或产生时，会通知回调；否则，一直不回调）
-			Solon.context().getBeanAsync(CacheService.class, bean -> {
-				// bean 获取后，可以做些后续处理。。。
-				log.info("app 异步订阅 CacheService, 执行初始化缓存动作");
-			});
+//			Solon.context().getBeanAsync(CacheService.class, bean -> {
+//				// bean 获取后，可以做些后续处理。。。
+//				log.info("app 异步订阅 CacheService, 执行初始化缓存动作");
+//			});
 
 		});
     }

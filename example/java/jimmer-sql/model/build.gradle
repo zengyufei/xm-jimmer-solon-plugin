@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
+    api "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
     annotationProcessor "org.babyfish.jimmer:jimmer-apt:${jimmerVersion}"
 }
 

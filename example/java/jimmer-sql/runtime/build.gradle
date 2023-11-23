@@ -8,25 +8,24 @@ repositories {
 
 dependencies {
 
-    implementation project(":model")
-    implementation project(":repository")
+    api project(":model")
+    api project(":repository")
 
     // For RedisConnectionFactory
-    implementation "org.springframework.data:spring-data-redis:${springBootVersion}"
+    api "org.springframework.data:spring-data-redis:${springBootVersion}"
 
     // For HttpServletRequest(javax or jakatra)
-    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    api "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
 
     // For @KafkaListener
-    implementation "org.springframework.kafka:spring-kafka:${springBootVersion}"
+    api "org.springframework.kafka:spring-kafka:${springBootVersion}"
 
-    implementation 'org.apache.kafka:connect-api:0.10.0.0'
+    api 'org.apache.kafka:connect-api:0.10.0.0'
 
-    implementation 'org.springdoc:springdoc-openapi-ui:1.6.13'
+    api 'org.springdoc:springdoc-openapi-ui:1.6.13'
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
-
