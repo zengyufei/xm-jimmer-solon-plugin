@@ -4,6 +4,9 @@ import org.babyfish.jimmer.Input
 import org.babyfish.jimmer.View
 import org.babyfish.jimmer.meta.ImmutableType
 import org.babyfish.jimmer.spring.core.PagingAndSortingRepository
+import org.babyfish.jimmer.spring.core.page.Page
+import org.babyfish.jimmer.spring.core.page.Pageable
+import org.babyfish.jimmer.spring.core.page.Sort
 import org.babyfish.jimmer.sql.ast.mutation.DeleteMode
 import org.babyfish.jimmer.sql.ast.mutation.SaveMode
 import org.babyfish.jimmer.sql.fetcher.Fetcher
@@ -13,9 +16,6 @@ import org.babyfish.jimmer.sql.kt.ast.mutation.KSaveCommandDsl
 import org.babyfish.jimmer.sql.kt.ast.mutation.KSimpleSaveResult
 import org.babyfish.jimmer.sql.kt.ast.query.KConfigurableRootQuery
 import org.babyfish.jimmer.sql.kt.ast.query.SortDsl
-import org.babyfish.jimmer.spring.core.page.Page
-import org.babyfish.jimmer.spring.core.page.Pageable
-import org.babyfish.jimmer.spring.core.page.Sort
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -46,7 +46,7 @@ interface KRepository<E: Any, ID: Any> : PagingAndSortingRepository<E, ID> {
     fun findByIds(ids: Iterable<ID>, fetcher: Fetcher<E>? = null): List<E>
 
 //    @AliasFor("findByIds")
-    override fun findAllById(ids: Iterable<ID>): List<E> = 
+    override fun findAllById(ids: Iterable<ID>): List<E> =
         findByIds(ids)
 
     fun findMapByIds(ids: Iterable<ID>, fetcher: Fetcher<E>? = null): Map<ID, E>
@@ -83,7 +83,7 @@ interface KRepository<E: Any, ID: Any> : PagingAndSortingRepository<E, ID> {
 
     override fun existsById(id: ID): Boolean =
         findNullable(id) != null
-    
+
     override fun count(): Long
 
     fun insert(input: Input<E>): E =

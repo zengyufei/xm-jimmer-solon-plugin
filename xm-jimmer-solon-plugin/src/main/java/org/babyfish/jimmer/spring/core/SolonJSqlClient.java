@@ -2,6 +2,7 @@ package org.babyfish.jimmer.spring.core;
 
 import org.babyfish.jimmer.spring.cfg.JimmerProperties;
 import org.babyfish.jimmer.spring.core.support.SolonConnectionManager;
+import org.babyfish.jimmer.spring.core.support.SolonLogicalDeletedValueGeneratorProvider;
 import org.babyfish.jimmer.spring.core.support.SolonTransientResolverProvider;
 import org.babyfish.jimmer.spring.core.support.SolonUserIdGeneratorProvider;
 import org.babyfish.jimmer.sql.DraftHandler;
@@ -10,10 +11,7 @@ import org.babyfish.jimmer.sql.JSqlClient;
 import org.babyfish.jimmer.sql.cache.CacheAbandonedCallback;
 import org.babyfish.jimmer.sql.cache.CacheFactory;
 import org.babyfish.jimmer.sql.cache.CacheOperator;
-import org.babyfish.jimmer.sql.di.AbstractJSqlClientWrapper;
-import org.babyfish.jimmer.sql.di.AopProxyProvider;
-import org.babyfish.jimmer.sql.di.TransientResolverProvider;
-import org.babyfish.jimmer.sql.di.UserIdGeneratorProvider;
+import org.babyfish.jimmer.sql.di.*;
 import org.babyfish.jimmer.sql.dialect.Dialect;
 import org.babyfish.jimmer.sql.event.TriggerType;
 import org.babyfish.jimmer.sql.event.Triggers;
@@ -36,14 +34,13 @@ import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class SolonJSqlClient extends AbstractJSqlClientWrapper {
+public class SolonJSqlClient extends JLazyInitializationSqlClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolonJSqlClient.class);
 
     private final AppContext ctx;
     private final Props dsProps;
     private final JimmerProperties jimmerProperties;
-
     private final boolean isKotlin;
 
     public SolonJSqlClient(AppContext ctx, JimmerProperties jimmerProperties, Props dsProps, boolean isKotlin) {
@@ -54,10 +51,11 @@ public class SolonJSqlClient extends AbstractJSqlClientWrapper {
     }
 
     @Override
-    protected Builder createBuilder() {
+    protected JSqlClient.Builder createBuilder() {
         DataSource dataSource = getOptionalBean(DataSource.class);
         ConnectionManager connectionManager = getOptionalBean(ConnectionManager.class);
         UserIdGeneratorProvider userIdGeneratorProvider = getOptionalBean(UserIdGeneratorProvider.class);
+        LogicalDeletedValueGeneratorProvider logicalDeletedValueGeneratorProvider = getOptionalBean(LogicalDeletedValueGeneratorProvider.class);
         TransientResolverProvider transientResolverProvider = getOptionalBean(TransientResolverProvider.class);
         AopProxyProvider aopProxyProvider = getOptionalBean(AopProxyProvider.class);
         EntityManager entityManager = getOptionalBean(EntityManager.class);
@@ -73,7 +71,7 @@ public class SolonJSqlClient extends AbstractJSqlClientWrapper {
         Collection<DraftHandler<?, ?>> handlers = getObjects(DraftHandler.class);
         Collection<DraftInterceptor<?>> interceptors = getObjects(DraftInterceptor.class);
 
-        Builder builder = JSqlClient.newBuilder();
+        JSqlClient.Builder builder = JSqlClient.newBuilder();
         if (connectionManager != null) {
             builder.setConnectionManager(connectionManager);
         } else if (dataSource != null) {
@@ -82,17 +80,21 @@ public class SolonJSqlClient extends AbstractJSqlClientWrapper {
         if (userIdGeneratorProvider != null) {
             builder.setUserIdGeneratorProvider(userIdGeneratorProvider);
         } else {
-//            builder.setUserIdGeneratorProvider(new SpringUserIdGeneratorProvider(ctx)); // 不兼容 solon
             builder.setUserIdGeneratorProvider(new SolonUserIdGeneratorProvider(ctx));
+        }
+        if (logicalDeletedValueGeneratorProvider != null) {
+            builder.setLogicalDeletedValueGeneratorProvider(logicalDeletedValueGeneratorProvider);
+        } else {
+            builder.setLogicalDeletedValueGeneratorProvider(new SolonLogicalDeletedValueGeneratorProvider(ctx));
         }
         if (transientResolverProvider != null) {
             builder.setTransientResolverProvider(transientResolverProvider);
         } else {
-//            builder.setTransientResolverProvider(new SpringTransientResolverProvider(ctx)); // 不兼容 solon
             builder.setTransientResolverProvider(new SolonTransientResolverProvider(ctx));
         }
-//        if (aopProxyProvider != null) {
         builder.setAopProxyProvider(aopProxyProvider);
+//        if (aopProxyProvider != null) {
+//            builder.setAopProxyProvider(aopProxyProvider);
 //        } else {
 //            builder.setAopProxyProvider(AopUtils::getTargetClass);
 //        }
@@ -153,7 +155,7 @@ public class SolonJSqlClient extends AbstractJSqlClientWrapper {
         return builder;
     }
 
-    private void initializeByLanguage(Builder builder) {
+    private void initializeByLanguage(JSqlClient.Builder builder) {
 
         Collection<Filter<?>> javaFilters = getObjects(Filter.class);
         Collection<Customizer> javaCustomizers = getObjects(Customizer.class);
@@ -224,6 +226,10 @@ public class SolonJSqlClient extends AbstractJSqlClientWrapper {
         }
     }
 
+    private <T> T getRequiredBean(Class<T> type) {
+        return ctx.getBean(type);
+    }
+
 
     private <T> T getOptionalBean(Class<T> type) {
         return ctx.getBean(type);
@@ -238,17 +244,13 @@ public class SolonJSqlClient extends AbstractJSqlClientWrapper {
 
         @Override
         public void initialize(JSqlClient sqlClient) throws Exception {
-            Triggers[] triggersArr = ((JSqlClientImplementor) sqlClient).getTriggerType() == TriggerType.BOTH ?
-                    new Triggers[]{sqlClient.getTriggers(), sqlClient.getTriggers(true)} :
-                    new Triggers[]{sqlClient.getTriggers()};
+            Triggers[] triggersArr = ((JSqlClientImplementor)sqlClient).getTriggerType() == TriggerType.BOTH ?
+                    new Triggers[] { sqlClient.getTriggers(), sqlClient.getTriggers(true) } :
+                    new Triggers[] { sqlClient.getTriggers() };
             for (Triggers triggers : triggersArr) {
                 triggers.addEntityListener(EventBus::push);
                 triggers.addAssociationListener(EventBus::push);
             }
         }
-    }
-
-    public JimmerProperties getProperties() {
-        return jimmerProperties;
     }
 }

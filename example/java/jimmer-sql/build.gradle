@@ -2,8 +2,7 @@ plugins {
     id "io.spring.dependency-management" version "1.1.3"
 }
 ext {
-    jimmerVersion = "0.8.44"
-    xmJimmerVersion = "1.0.0"
+    jimmerVersion = "0.8.46"
     springBootVersion = "2.7.0"
 }
 

@@ -13,7 +13,7 @@ dependencies {
     api(project(":repository"))
 //    runtimeOnly project(":runtime")
 
-    api("vip.xunmo:xm-jimmer-solon-plugin:${xmJimmerVersion}")
+    api("vip.xunmo:xm-jimmer-solon-plugin:${jimmerVersion}")
     api("org.babyfish.jimmer:jimmer-sql:${jimmerVersion}")
     api("org.babyfish.jimmer:jimmer-client:${jimmerVersion}")
     api("org.noear:solon")

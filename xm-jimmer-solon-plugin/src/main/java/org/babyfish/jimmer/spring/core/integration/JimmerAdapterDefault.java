@@ -1,51 +1,36 @@
 package org.babyfish.jimmer.spring.core.integration;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.babyfish.jimmer.spring.cache.impl.TransactionCacheOperatorFlusher;
 import org.babyfish.jimmer.spring.cfg.JimmerProperties;
 import org.babyfish.jimmer.spring.client.SolonCodeBasedExceptionAdvice;
-import org.babyfish.jimmer.spring.core.*;
+import org.babyfish.jimmer.spring.core.JimmerAdapter;
+import org.babyfish.jimmer.spring.core.Repository;
+import org.babyfish.jimmer.spring.core.SolonJSqlClient;
 import org.babyfish.jimmer.spring.repository.JRepository;
 import org.babyfish.jimmer.spring.repository.support.JimmerRepositoryFactory;
-import org.babyfish.jimmer.sql.DraftInterceptor;
 import org.babyfish.jimmer.sql.EnumType;
 import org.babyfish.jimmer.sql.JSqlClient;
-import org.babyfish.jimmer.sql.cache.CacheAbandonedCallback;
-import org.babyfish.jimmer.sql.cache.CacheFactory;
 import org.babyfish.jimmer.sql.cache.CacheOperator;
 import org.babyfish.jimmer.sql.cache.TransactionCacheOperator;
-import org.babyfish.jimmer.sql.di.AbstractJSqlClientWrapper;
-import org.babyfish.jimmer.sql.di.InitializationType;
-import org.babyfish.jimmer.sql.dialect.DefaultDialect;
-import org.babyfish.jimmer.sql.dialect.Dialect;
 import org.babyfish.jimmer.sql.event.TriggerType;
-import org.babyfish.jimmer.sql.event.Triggers;
-import org.babyfish.jimmer.sql.filter.Filter;
 import org.babyfish.jimmer.sql.kt.KSqlClient;
 import org.babyfish.jimmer.sql.kt.KSqlClientKt;
-import org.babyfish.jimmer.sql.kt.cfg.KCustomizer;
-import org.babyfish.jimmer.sql.kt.cfg.KInitializer;
-import org.babyfish.jimmer.sql.kt.filter.KFilter;
-import org.babyfish.jimmer.sql.meta.DatabaseNamingStrategy;
-import org.babyfish.jimmer.sql.runtime.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.babyfish.jimmer.sql.runtime.DatabaseValidationMode;
+import org.babyfish.jimmer.sql.runtime.IdOnlyTargetCheckingLevel;
+import org.babyfish.jimmer.sql.runtime.JSqlClientImplementor;
 import org.noear.solon.Solon;
 import org.noear.solon.core.AppContext;
 import org.noear.solon.core.BeanWrap;
 import org.noear.solon.core.Props;
 import org.noear.solon.core.VarHolder;
-import org.noear.solon.core.event.EventBus;
 import org.noear.solon.core.util.GenericUtil;
 import org.noear.solon.core.wrap.ClassWrap;
 
 import javax.sql.DataSource;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**

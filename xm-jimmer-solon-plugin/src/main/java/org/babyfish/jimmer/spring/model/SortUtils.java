@@ -3,9 +3,9 @@ package org.babyfish.jimmer.spring.model;
 import org.babyfish.jimmer.meta.ImmutableProp;
 import org.babyfish.jimmer.meta.ImmutableType;
 import org.babyfish.jimmer.meta.TypedProp;
+import org.babyfish.jimmer.spring.core.page.Sort;
 import org.babyfish.jimmer.sql.ast.query.Order;
 import org.babyfish.jimmer.sql.ast.query.OrderMode;
-import org.babyfish.jimmer.spring.core.page.Sort;
 
 import java.util.ArrayList;
 import java.util.List;

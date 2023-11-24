@@ -1,7 +1,5 @@
 package org.babyfish.jimmer.spring.core.integration;
 
-import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -13,17 +11,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.babyfish.jimmer.jackson.ImmutableModule;
-import org.babyfish.jimmer.spring.cfg.JimmerProperties;
-import org.babyfish.jimmer.spring.client.SolonCodeBasedExceptionAdvice;
-import org.babyfish.jimmer.spring.core.annotation.Db;
 import org.babyfish.jimmer.spring.core.JimmerAdapter;
+import org.babyfish.jimmer.spring.core.annotation.Db;
 import org.babyfish.jimmer.spring.core.interceptor.XmCacheInterceptor;
 import org.babyfish.jimmer.spring.core.interceptor.XmCachePutInterceptor;
 import org.babyfish.jimmer.spring.core.interceptor.XmCacheRemoveInterceptor;
-import org.babyfish.jimmer.sql.EnumType;
-import org.babyfish.jimmer.sql.event.TriggerType;
-import org.babyfish.jimmer.sql.runtime.DatabaseValidationMode;
-import org.babyfish.jimmer.sql.runtime.IdOnlyTargetCheckingLevel;
 import org.noear.solon.Solon;
 import org.noear.solon.SolonApp;
 import org.noear.solon.Utils;
@@ -31,7 +23,6 @@ import org.noear.solon.core.*;
 import org.noear.solon.core.event.EventBus;
 import org.noear.solon.core.handle.Context;
 import org.noear.solon.core.handle.RenderManager;
-import org.noear.solon.core.wrap.ClassWrap;
 import org.noear.solon.core.wrap.MethodWrap;
 import org.noear.solon.data.annotation.Cache;
 import org.noear.solon.data.annotation.CachePut;
@@ -44,9 +35,6 @@ import org.noear.solon.serialization.jackson.JacksonActionExecutor;
 import org.noear.solon.serialization.jackson.JacksonSerializer;
 
 import javax.sql.DataSource;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.fasterxml.jackson.databind.MapperFeature.PROPAGATE_TRANSIENT_MARKER;
 import static com.fasterxml.jackson.databind.MapperFeature.SORT_PROPERTIES_ALPHABETICALLY;

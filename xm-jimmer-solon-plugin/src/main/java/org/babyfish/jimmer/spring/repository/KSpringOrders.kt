@@ -1,14 +1,14 @@
 package org.babyfish.jimmer.spring.repository
 
+import org.babyfish.jimmer.spring.core.page.Sort
 import org.babyfish.jimmer.sql.ast.query.NullOrderMode
 import org.babyfish.jimmer.sql.ast.query.OrderMode
 import org.babyfish.jimmer.sql.kt.ast.expression.KPropExpression
 import org.babyfish.jimmer.sql.kt.ast.expression.asc
 import org.babyfish.jimmer.sql.kt.ast.expression.desc
-import org.babyfish.jimmer.sql.kt.ast.query.SortDsl
 import org.babyfish.jimmer.sql.kt.ast.query.KMutableQuery
+import org.babyfish.jimmer.sql.kt.ast.query.SortDsl
 import org.babyfish.jimmer.sql.kt.ast.table.impl.KTableImplementor
-import org.babyfish.jimmer.spring.core.page.Sort
 
 fun KMutableQuery<*>.orderBy(sort: Sort?) {
     orderBy(*SpringOrders.toOrders((table as KTableImplementor<*>).javaTable, sort))

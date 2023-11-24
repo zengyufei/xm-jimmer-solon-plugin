@@ -9,7 +9,10 @@ import org.babyfish.jimmer.sql.cache.chain.LoadingBinder;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CaffeineBinder<K, V> implements LoadingBinder<K, V> {

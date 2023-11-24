@@ -2,7 +2,9 @@ package org.babyfish.jimmer.sql.example;
 
 import org.babyfish.jimmer.sql.EnableDtoGeneration;
 import org.noear.solon.Solon;
+import org.noear.solon.annotation.SolonMain;
 
+@SolonMain
 @EnableDtoGeneration
 public class App {
 

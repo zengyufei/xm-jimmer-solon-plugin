@@ -3,9 +3,14 @@ package org.babyfish.jimmer.spring.repository.support
 import org.babyfish.jimmer.ImmutableObjects
 import org.babyfish.jimmer.View
 import org.babyfish.jimmer.meta.ImmutableType
-import org.babyfish.jimmer.spring.core.page.*
-import org.babyfish.jimmer.spring.repository.*
-import org.babyfish.jimmer.sql.ast.mutation.*
+import org.babyfish.jimmer.spring.core.page.Page
+import org.babyfish.jimmer.spring.core.page.Pageable
+import org.babyfish.jimmer.spring.core.page.Sort
+import org.babyfish.jimmer.spring.repository.JRepository
+import org.babyfish.jimmer.spring.repository.KRepository
+import org.babyfish.jimmer.spring.repository.fetchPage
+import org.babyfish.jimmer.spring.repository.orderBy
+import org.babyfish.jimmer.sql.ast.mutation.DeleteMode
 import org.babyfish.jimmer.sql.fetcher.Fetcher
 import org.babyfish.jimmer.sql.kt.KSqlClient
 import org.babyfish.jimmer.sql.kt.ast.mutation.KBatchSaveResult

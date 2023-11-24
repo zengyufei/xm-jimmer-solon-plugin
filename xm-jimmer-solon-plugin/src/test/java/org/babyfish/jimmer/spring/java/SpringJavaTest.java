@@ -1,48 +1,89 @@
 package org.babyfish.jimmer.spring.java;
 
-import cn.hutool.json.JSONUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import org.babyfish.jimmer.client.meta.Metadata;
 import org.babyfish.jimmer.spring.AbstractTest;
-import org.babyfish.jimmer.spring.App;
+import org.babyfish.jimmer.spring.cfg.ErrorTranslatorConfig;
 import org.babyfish.jimmer.spring.cfg.JimmerProperties;
-import org.babyfish.jimmer.spring.core.annotation.Db;
-import org.babyfish.jimmer.spring.core.page.Page;
-import org.babyfish.jimmer.spring.core.page.PageRequest;
-import org.babyfish.jimmer.spring.core.page.Pageable;
-import org.babyfish.jimmer.spring.core.page.Sort;
+import org.babyfish.jimmer.spring.cfg.MetadataCondition;
+import org.babyfish.jimmer.spring.cfg.SqlClientConfig;
+import org.babyfish.jimmer.spring.client.JavaFeignController;
+import org.babyfish.jimmer.spring.client.MetadataFactoryBean;
+import org.babyfish.jimmer.spring.client.TypeScriptController;
 import org.babyfish.jimmer.spring.datasource.DataSources;
+import org.babyfish.jimmer.spring.datasource.TxCallback;
+import org.babyfish.jimmer.spring.java.bll.BookService;
 import org.babyfish.jimmer.spring.java.bll.ErrorService;
+import org.babyfish.jimmer.spring.java.bll.resolver.BookStoreNewestBooksResolver;
 import org.babyfish.jimmer.spring.java.dal.BookRepository;
 import org.babyfish.jimmer.spring.java.dal.BookStoreRepository;
-import org.babyfish.jimmer.spring.java.model.*;
+import org.babyfish.jimmer.spring.java.model.Book;
+import org.babyfish.jimmer.spring.java.model.BookStore;
 import org.babyfish.jimmer.spring.java.model.dto.BookSpecification;
 import org.babyfish.jimmer.spring.java.model.dto.BookStoreView;
 import org.babyfish.jimmer.spring.java.model.dto.BookView;
 import org.babyfish.jimmer.spring.model.SortUtils;
-import org.junit.Test;
+import org.babyfish.jimmer.spring.repository.EnableJimmerRepositories;
+import org.babyfish.jimmer.spring.repository.config.JimmerRepositoryConfigExtension;
+import org.babyfish.jimmer.spring.repository.support.JimmerRepositoryFactoryBean;
+import org.babyfish.jimmer.sql.runtime.DefaultExecutor;
+import org.babyfish.jimmer.sql.runtime.Executor;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
-import org.noear.solon.annotation.Inject;
-import org.noear.solon.test.SolonJUnit4ClassRunner;
-import org.noear.solon.test.SolonTest;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-@Slf4j
-@SolonTest(classes = App.class)
-@RunWith(SolonJUnit4ClassRunner.class)
-//@AutoConfigurationPackage
-//@EnableJimmerRepositories
-//@Import({SqlClientConfig.class, ErrorTranslatorConfig.class})
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.*;
+
+@SpringBootTest(properties = {
+        "jimmer.client.ts.path=/my-ts.zip",
+        "jimmer.database-validation-mode=ERROR",
+        "jimmer.client.java-feign.path=/my-java.zip",
+        "jimmer.client.java-feign.base-package=com.myapp.feign",
+        "jimmer.dialect=org.babyfish.jimmer.sql.dialect.H2Dialect",
+        "spring.application.name=java-client",
+        "jimmer.clients.first.ts.path=/my-ts1.zip",
+        "jimmer.clients.second.ts.path=/my-ts2.zip"
+})
+@SpringBootConfiguration
+@AutoConfigurationPackage
+@EnableJimmerRepositories
+@EnableConfigurationProperties(JimmerProperties.class)
+@Import({SqlClientConfig.class, ErrorTranslatorConfig.class})
 public class SpringJavaTest extends AbstractTest {
 
     private final static List<String> TRANSACTION_EVENTS = new ArrayList<>();
@@ -60,123 +101,123 @@ public class SpringJavaTest extends AbstractTest {
         SQL_STATEMENTS.clear();
     }
 
-//    @EnableJimmerRepositories
-//    @ConditionalOnMissingBean({ JimmerRepositoryFactoryBean.class, JimmerRepositoryConfigExtension.class })
-//    @Configuration
-//    static class DuplicatedConfig {
-//        // Use @EnableJimmerRepositories twice,
-//        // use @ConditionalOnMissBean to resolve conflict
-//    }
+    @EnableJimmerRepositories
+    @ConditionalOnMissingBean({ JimmerRepositoryFactoryBean.class, JimmerRepositoryConfigExtension.class })
+    @Configuration
+    static class DuplicatedConfig {
+        // Use @EnableJimmerRepositories twice,
+        // use @ConditionalOnMissBean to resolve conflict
+    }
 
-//    @EnableWebMvc
-//    @Configuration
-//    static class SqlClientConfig {
-//
-//        @Bean
-//        public DataSource dataSource() {
-//            return DataSources.create(
-//                    new TxCallback() {
-//
-//                        @Override
-//                        public void open() {
-//                            TRANSACTION_EVENTS.add("connect");
-//                        }
-//
-//                        @Override
-//                        public void commit() {
-//                            TRANSACTION_EVENTS.add("commit");
-//                        }
-//
-//                        @Override
-//                        public void rollback() {
-//                            TRANSACTION_EVENTS.add("rollback");
-//                        }
-//                    }
-//            );
-//        }
-//
-//        @Bean
-//        public Executor executor() {
-//            return new Executor() {
-//                @Override
-//                public <R> R execute(@NotNull Args<R> args) {
-//                    SQL_STATEMENTS.add(args.sql);
-//                    return DefaultExecutor.INSTANCE.execute(args);
-//                }
-//            };
-//        }
-////
-////        @Bean
-////        public PlatformTransactionManager transactionManager(DataSource dataSource) {
-////            return new JdbcTransactionManager(dataSource);
-////        }
-////
-////        @Bean
-////        public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
-////            return new TransactionTemplate(transactionManager);
-////        }
-//
-////        @Bean
-////        public BookService bookService(@Inject BookRepository bookRepository) {
-////            return new BookService();
-////        }
-//
-//        @Bean
-//        public BookStoreNewestBooksResolver bookStoreNewestBooksResolver(BookStoreRepository bookStoreRepository) {
-//            return new BookStoreNewestBooksResolver(bookStoreRepository);
-//        }
-//
-//        @Bean
-//        public ErrorService errorService() {
-//            return new ErrorService();
-//        }
-//
-////        @Bean
-////        public MockMvc mockMvc(WebApplicationContext ctx) {
-////            return webAppContextSetup(ctx).build();
-////        }
-//
-////        @ConditionalOnProperty("jimmer.client.ts.path")
-////        @ConditionalOnMissingBean(TypeScriptController.class)
-////        @Bean
-////        public TypeScriptController typeScriptController(Metadata metadata, JimmerProperties properties) {
-////            return new TypeScriptController(metadata, properties);
-////        }
-////
-////        @ConditionalOnProperty("jimmer.client.java-feign.path")
-////        @ConditionalOnMissingBean(JavaFeignController.class)
-////        @Bean
-////        public JavaFeignController javaFeignController(Metadata metadata, JimmerProperties properties) {
-////            return new JavaFeignController(metadata, properties);
-////        }
-////
-////        @Conditional(MetadataCondition.class)
-////        @ConditionalOnMissingBean(Metadata.class)
-////        @Bean
-////        public MetadataFactoryBean metadataFactoryBean(
-////                ApplicationContext ctx,
-////                @Autowired(required = false) ParameterNameDiscoverer parameterNameDiscoverer
-////        ) {
-////            return new MetadataFactoryBean(ctx, parameterNameDiscoverer);
-////        }
-//    }
+    @EnableWebMvc
+    @Configuration
+    static class SqlClientConfig {
 
-    @Db
+        @Bean
+        public DataSource dataSource() {
+            return DataSources.create(
+                    new TxCallback() {
+
+                        @Override
+                        public void open() {
+                            TRANSACTION_EVENTS.add("connect");
+                        }
+
+                        @Override
+                        public void commit() {
+                            TRANSACTION_EVENTS.add("commit");
+                        }
+
+                        @Override
+                        public void rollback() {
+                            TRANSACTION_EVENTS.add("rollback");
+                        }
+                    }
+            );
+        }
+
+        @Bean
+        public Executor executor() {
+            return new Executor() {
+                @Override
+                public <R> R execute(@NotNull Args<R> args) {
+                    SQL_STATEMENTS.add(args.sql);
+                    return DefaultExecutor.INSTANCE.execute(args);
+                }
+            };
+        }
+
+        @Bean
+        public PlatformTransactionManager transactionManager(DataSource dataSource) {
+            return new JdbcTransactionManager(dataSource);
+        }
+
+        @Bean
+        public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+            return new TransactionTemplate(transactionManager);
+        }
+
+        @Bean
+        public BookService bookService(BookRepository bookRepository) {
+            return new BookService(bookRepository);
+        }
+
+        @Bean
+        public BookStoreNewestBooksResolver bookStoreNewestBooksResolver(BookStoreRepository bookStoreRepository) {
+            return new BookStoreNewestBooksResolver(bookStoreRepository);
+        }
+
+        @Bean
+        public ErrorService errorService() {
+            return new ErrorService();
+        }
+
+        @Bean
+        public MockMvc mockMvc(WebApplicationContext ctx) {
+            return webAppContextSetup(ctx).build();
+        }
+
+        @ConditionalOnProperty("jimmer.client.ts.path")
+        @ConditionalOnMissingBean(TypeScriptController.class)
+        @Bean
+        public TypeScriptController typeScriptController(Metadata metadata, JimmerProperties properties) {
+            return new TypeScriptController(metadata, properties);
+        }
+
+        @ConditionalOnProperty("jimmer.client.java-feign.path")
+        @ConditionalOnMissingBean(JavaFeignController.class)
+        @Bean
+        public JavaFeignController javaFeignController(Metadata metadata, JimmerProperties properties) {
+            return new JavaFeignController(metadata, properties);
+        }
+
+        @Conditional(MetadataCondition.class)
+        @ConditionalOnMissingBean(Metadata.class)
+        @Bean
+        public MetadataFactoryBean metadataFactoryBean(
+                ApplicationContext ctx,
+                @Autowired(required = false) ParameterNameDiscoverer parameterNameDiscoverer
+        ) {
+            return new MetadataFactoryBean(ctx, parameterNameDiscoverer);
+        }
+    }
+
+    @Autowired
     private BookRepository bookRepository;
 
-    @Db
+    @Autowired
     private BookStoreRepository bookStoreRepository;
 
-    @Inject
+    @Autowired
     private ErrorService errorService;
 
-//    @Autowired
-//    private TransactionTemplate transactionTemplate;
-//
-//    @Autowired
-//    private MockMvc mvc;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
-    @Inject(required = false)
+    @Autowired
+    private MockMvc mvc;
+
+    @Autowired
     private JimmerProperties jimmerProperties;
 
     @Test
@@ -202,7 +243,7 @@ public class SpringJavaTest extends AbstractTest {
         assertTransactionEvents();
         Page<Book> page = bookRepository.findAll(0, 10, BookProps.NAME.desc());
         assertSQLs(
-                "select count(tb_1_.ID) from BOOK tb_1_",
+                "select count(1) from BOOK tb_1_",
                 "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
                         "from BOOK tb_1_ " +
                         "order by tb_1_.NAME desc " +
@@ -221,43 +262,43 @@ public class SpringJavaTest extends AbstractTest {
         assertTransactionEvents("connect", "connect");
     }
 
-//    @Test
-//    public void testByTransaction() {
-//
-//        assertTransactionEvents();
-//        transactionTemplate.execute(new TransactionCallback<Void>() {
-//            @Override
-//            public Void doInTransaction(@NotNull TransactionStatus status) {
-//                Assertions.assertEquals(12, bookRepository.findAll(BookProps.NAME.desc()).size());
-//                assertSQLs(
-//                        "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
-//                                "from BOOK tb_1_ " +
-//                                "order by tb_1_.NAME desc"
-//                );
-//
-//                Page<Book> page = bookRepository.findAll(0, 10, BookProps.NAME.desc());
-//                assertSQLs(
-//                        "select count(tb_1_.ID) from BOOK tb_1_",
-//                        "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
-//                                "from BOOK tb_1_ " +
-//                                "order by tb_1_.NAME desc " +
-//                                "limit ?"
-//                );
-//                Assertions.assertEquals(12, page.getTotalElements());
-//                Assertions.assertEquals(2, page.getTotalPages());
-//                Assertions.assertEquals(
-//                        Sort.by(
-//                                Collections.singletonList(
-//                                        new Sort.Order(Sort.Direction.DESC, "name")
-//                                )
-//                        ),
-//                        page.getPageable().getSort()
-//                );
-//                return null;
-//            }
-//        });
-//        assertTransactionEvents("connect", "commit");
-//    }
+    @Test
+    public void testByTransaction() {
+
+        assertTransactionEvents();
+        transactionTemplate.execute(new TransactionCallback<Void>() {
+            @Override
+            public Void doInTransaction(@NotNull TransactionStatus status) {
+                Assertions.assertEquals(12, bookRepository.findAll(BookProps.NAME.desc()).size());
+                assertSQLs(
+                        "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
+                                "from BOOK tb_1_ " +
+                                "order by tb_1_.NAME desc"
+                );
+
+                Page<Book> page = bookRepository.findAll(0, 10, BookProps.NAME.desc());
+                assertSQLs(
+                        "select count(1) from BOOK tb_1_",
+                        "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
+                                "from BOOK tb_1_ " +
+                                "order by tb_1_.NAME desc " +
+                                "limit ?"
+                );
+                Assertions.assertEquals(12, page.getTotalElements());
+                Assertions.assertEquals(2, page.getTotalPages());
+                Assertions.assertEquals(
+                        Sort.by(
+                                Collections.singletonList(
+                                        new Sort.Order(Sort.Direction.DESC, "name")
+                                )
+                        ),
+                        page.getPageable().getSort()
+                );
+                return null;
+            }
+        });
+        assertTransactionEvents("connect", "commit");
+    }
 
     @Test
     public void testBySpringSort() {
@@ -276,7 +317,7 @@ public class SpringJavaTest extends AbstractTest {
         assertTransactionEvents();
         Page<Book> page = bookRepository.findAll(0, 10, sort);
         assertSQLs(
-                "select count(tb_1_.ID) from BOOK tb_1_",
+                "select count(1) from BOOK tb_1_",
                 "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
                         "from BOOK tb_1_ " +
                         "order by tb_1_.NAME asc, tb_1_.EDITION desc " +
@@ -304,7 +345,7 @@ public class SpringJavaTest extends AbstractTest {
         assertTransactionEvents();
         Page<Book> page = bookRepository.findAll(pageable);
         assertSQLs(
-                "select count(tb_1_.ID) from BOOK tb_1_",
+                "select count(1) from BOOK tb_1_",
                 "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
                         "from BOOK tb_1_ " +
                         "order by tb_1_.NAME desc " +
@@ -383,7 +424,7 @@ public class SpringJavaTest extends AbstractTest {
     }
 
     @Test
-    public void testFindByNameLikeIgnoreCaseAndStoreNameOrderByNameAscEditionDesc() throws JsonProcessingException {
+    public void testFindByNameLikeIgnoreCaseAndStoreNameOrderByNameAscEditionDesc() {
         Pageable pageable = PageRequest.of(0, 2);
         Page<Book> page = bookRepository.findByNameLikeIgnoreCaseAndStoreNameOrderByNameAscEditionDesc(
                 pageable,
@@ -397,7 +438,7 @@ public class SpringJavaTest extends AbstractTest {
                 "O'REILLY"
         );
         assertSQLs(
-                "select count(tb_1_.ID) " +
+                "select count(1) " +
                         "from BOOK tb_1_ " +
                         "inner join BOOK_STORE tb_2_ on tb_1_.STORE_ID = tb_2_.ID " +
                         "where tb_1_.NAME ilike ? " +
@@ -458,6 +499,44 @@ public class SpringJavaTest extends AbstractTest {
         );
         Assertions.assertEquals(3, page.getTotalElements());
         Assertions.assertEquals(2, page.getTotalPages());
+    }
+
+    @Test
+    public void testFindByNameLikeIgnoreCaseOrderByNameAscEditionDesc() {
+        Pageable pageable = PageRequest.of(0, 2);
+        Page<Book> page = bookRepository.findByNameLikeIgnoreCaseAndStoreNameOrderByNameAscEditionDesc(
+                pageable,
+                null,
+                "graphql",
+                null
+        );
+        assertSQLs(
+                "select count(1) from BOOK tb_1_ where tb_1_.NAME ilike ?",
+                "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID from BOOK tb_1_ where tb_1_.NAME ilike ? order by tb_1_.NAME asc, tb_1_.EDITION desc limit ?"
+        );
+    }
+
+    @Test
+    public void testFindByStoreNameOrderByNameAscEditionDesc() {
+        Pageable pageable = PageRequest.of(0, 2);
+        Page<Book> page = bookRepository.findByNameLikeIgnoreCaseAndStoreNameOrderByNameAscEditionDesc(
+                pageable,
+                null,
+                null,
+                "manning"
+        );
+        assertSQLs(
+                "select count(1) " +
+                        "from BOOK tb_1_ " +
+                        "inner join BOOK_STORE tb_2_ on tb_1_.STORE_ID = tb_2_.ID " +
+                        "where tb_2_.NAME = ?",
+                "select tb_1_.ID, tb_1_.NAME, tb_1_.EDITION, tb_1_.PRICE, tb_1_.STORE_ID " +
+                        "from BOOK tb_1_ " +
+                        "inner join BOOK_STORE tb_2_ on tb_1_.STORE_ID = tb_2_.ID " +
+                        "where tb_2_.NAME = ? " +
+                        "order by tb_1_.NAME asc, tb_1_.EDITION desc " +
+                        "limit ?"
+        );
     }
 
     @Test
@@ -737,40 +816,35 @@ public class SpringJavaTest extends AbstractTest {
 
     @Test
     public void testError() throws Exception {
-        final Response response = path("/error/test").exec("get");
-        final int code = response.code();
-        final ResponseBody body = response.body();
-        System.out.println(code);
-        System.out.println(JSONUtil.toJsonStr(body));
-//        mvc.perform(get("/error/test"))
-//                .andExpect(status().is5xxServerError())
-//                .andExpect(
-//                        content().string(
-//                                "{" +
-//                                        "\"family\":\"GEOGRAPHY_ERROR_CODE\"," +
-//                                        "\"code\":\"ILLEGAL_POSITION\"," +
-//                                        "\"longitude\":104.06," +
-//                                        "\"latitude\":30.67" +
-//                                        "}"
-//                        )
-//                );
+        mvc.perform(get("/error/test"))
+                .andExpect(status().is5xxServerError())
+                .andExpect(
+                        content().string(
+                                "{" +
+                                        "\"family\":\"GEOGRAPHY_ERROR_CODE\"," +
+                                        "\"code\":\"ILLEGAL_POSITION\"," +
+                                        "\"longitude\":104.06," +
+                                        "\"latitude\":30.67" +
+                                        "}"
+                        )
+                );
     }
 
-//    @Test
-//    public void testDownloadTypescript() throws Exception {
-//        mvc.perform(get("/my-ts.zip"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith("application/zip"));
-//    }
-//
-//    @Test
-//    public void testDownloadJavaFeign() throws Exception {
-//        mvc.perform(get("/my-java.zip"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith("application/zip"));
-//    }
+    @Test
+    public void testDownloadTypescript() throws Exception {
+        mvc.perform(get("/my-ts.zip"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/zip"));
+    }
 
-    private static void assertTransactionEvents(String... events) {
+    @Test
+    public void testDownloadJavaFeign() throws Exception {
+        mvc.perform(get("/my-java.zip"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/zip"));
+    }
+
+    private static void assertTransactionEvents(String ... events) {
         try {
             Assertions.assertEquals(Arrays.asList(events), TRANSACTION_EVENTS);
         } finally {
@@ -778,7 +852,7 @@ public class SpringJavaTest extends AbstractTest {
         }
     }
 
-    private static void assertSQLs(String... statements) {
+    private static void assertSQLs(String ... statements) {
         try {
             for (int i = 0; i < Math.min(statements.length, SQL_STATEMENTS.size()); i++) {
                 Assertions.assertEquals(statements[i].replace("--->", ""), SQL_STATEMENTS.get(i), "sql[" + i + ']');

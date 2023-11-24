@@ -12,7 +12,7 @@ dependencies {
 
     api project(":model")
 
-    api "vip.xunmo:xm-jimmer-solon-plugin:${xmJimmerVersion}"
+    api "vip.xunmo:xm-jimmer-solon-plugin:${jimmerVersion}"
 //    api "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
 //    api "org.babyfish.jimmer:jimmer-spring-boot-starter:${jimmerVersion}"
 }

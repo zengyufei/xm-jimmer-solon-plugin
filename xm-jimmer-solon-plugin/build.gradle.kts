@@ -6,7 +6,7 @@ plugins {
     id("maven-publish")
 }
 group = "vip.xunmo"
-version = "1.0.0"
+version = "0.8.46"
 
 repositories {
     mavenLocal()
@@ -30,12 +30,12 @@ dependencyManagement {
 
 dependencies {
 
-    api("org.babyfish.jimmer:jimmer-sql:0.8.44")
-    api("org.babyfish.jimmer:jimmer-sql-kotlin:0.8.44")
-    api("org.babyfish.jimmer:jimmer-client:0.8.44")
+    api("org.babyfish.jimmer:jimmer-sql:0.8.46")
+    api("org.babyfish.jimmer:jimmer-sql-kotlin:0.8.46")
+    api("org.babyfish.jimmer:jimmer-client:0.8.46")
 
-    testAnnotationProcessor("org.babyfish.jimmer:jimmer-apt:0.8.44")
-    kspTest("org.babyfish.jimmer:jimmer-ksp:0.8.44")
+    testAnnotationProcessor("org.babyfish.jimmer:jimmer-apt:0.8.46")
+    kspTest("org.babyfish.jimmer:jimmer-ksp:0.8.46")
 
     api("org.noear:solon")
     api("org.noear:solon-lib")

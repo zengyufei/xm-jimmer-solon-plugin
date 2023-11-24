@@ -6,7 +6,6 @@ import org.babyfish.jimmer.sql.meta.UserIdGenerator;
 import org.noear.solon.core.AppContext;
 
 import java.util.List;
-import java.util.Map;
 
 public class SolonUserIdGeneratorProvider extends DefaultUserIdGeneratorProvider {
 

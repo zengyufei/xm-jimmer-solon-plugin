@@ -1,6 +1,7 @@
 package org.babyfish.jimmer.spring.repository.support;
 
 import org.babyfish.jimmer.meta.ImmutableProp;
+import org.babyfish.jimmer.spring.core.page.Sort;
 import org.babyfish.jimmer.spring.core.support.SolonConnectionManager;
 import org.babyfish.jimmer.spring.core.support.SolonTransientResolverProvider;
 import org.babyfish.jimmer.sql.JSqlClient;
@@ -15,7 +16,6 @@ import org.babyfish.jimmer.sql.meta.EmbeddedColumns;
 import org.babyfish.jimmer.sql.meta.MetadataStrategy;
 import org.babyfish.jimmer.sql.runtime.ConnectionManager;
 import org.babyfish.jimmer.sql.runtime.JSqlClientImplementor;
-import org.babyfish.jimmer.spring.core.page.Sort;
 
 import java.util.ArrayList;
 import java.util.Collection;

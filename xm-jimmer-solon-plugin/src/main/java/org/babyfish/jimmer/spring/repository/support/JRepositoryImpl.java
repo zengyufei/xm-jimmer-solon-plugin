@@ -5,6 +5,7 @@ import org.babyfish.jimmer.Input;
 import org.babyfish.jimmer.View;
 import org.babyfish.jimmer.meta.ImmutableType;
 import org.babyfish.jimmer.meta.TypedProp;
+import org.babyfish.jimmer.spring.core.page.*;
 import org.babyfish.jimmer.spring.repository.JRepository;
 import org.babyfish.jimmer.spring.repository.SpringOrders;
 import org.babyfish.jimmer.sql.Entity;
@@ -27,7 +28,6 @@ import org.babyfish.jimmer.sql.runtime.ExecutionPurpose;
 import org.babyfish.jimmer.sql.runtime.JSqlClientImplementor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.babyfish.jimmer.spring.core.page.*;
 import org.noear.solon.core.util.GenericUtil;
 
 import java.util.List;

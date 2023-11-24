@@ -1,21 +1,22 @@
 package org.babyfish.jimmer.spring.repository;
 
-import cn.hutool.core.annotation.AliasFor;
+import org.babyfish.jimmer.Input;
 import org.babyfish.jimmer.View;
 import org.babyfish.jimmer.meta.ImmutableType;
 import org.babyfish.jimmer.meta.TypedProp;
-import org.babyfish.jimmer.Input;
 import org.babyfish.jimmer.spring.core.PagingAndSortingRepository;
+import org.babyfish.jimmer.spring.core.page.Page;
+import org.babyfish.jimmer.spring.core.page.Pageable;
+import org.babyfish.jimmer.spring.core.page.Sort;
 import org.babyfish.jimmer.sql.JSqlClient;
 import org.babyfish.jimmer.sql.ast.mutation.*;
 import org.babyfish.jimmer.sql.ast.query.ConfigurableRootQuery;
 import org.babyfish.jimmer.sql.fetcher.Fetcher;
 import org.jetbrains.annotations.NotNull;
-import org.babyfish.jimmer.spring.core.page.Page;
-import org.babyfish.jimmer.spring.core.page.Pageable;
-import org.babyfish.jimmer.spring.core.page.Sort;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 //@NoRepositoryBean // 不兼容 solon
@@ -94,7 +95,7 @@ public interface JRepository<E, ID> extends PagingAndSortingRepository<E, ID> {
 
     @SuppressWarnings("unchecked")
     Page<E> findAll(int pageIndex, int pageSize, Fetcher<E> fetcher, TypedProp.Scalar<?, ?> ... sortedProps);
-    
+
     Page<E> findAll(int pageIndex, int pageSize, Sort sort);
 
     Page<E> findAll(int pageIndex, int pageSize, Fetcher<E> fetcher, Sort sort);
@@ -102,7 +103,7 @@ public interface JRepository<E, ID> extends PagingAndSortingRepository<E, ID> {
     @NotNull
     @Override
     Page<E> findAll(@NotNull Pageable pageable);
-    
+
     Page<E> findAll(Pageable pageable, Fetcher<E> fetcher);
 
     @Override
@@ -197,7 +198,7 @@ public interface JRepository<E, ID> extends PagingAndSortingRepository<E, ID> {
     }
 
     int deleteById(@NotNull ID id, DeleteMode mode);
-    
+
 //    @AliasFor("deleteAllById")
     default void deleteByIds(Iterable<? extends ID> ids) {
         deleteByIds(ids, DeleteMode.AUTO);

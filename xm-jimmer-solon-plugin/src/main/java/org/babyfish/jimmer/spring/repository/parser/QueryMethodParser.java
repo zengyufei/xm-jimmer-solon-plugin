@@ -5,10 +5,10 @@ import org.babyfish.jimmer.Specification;
 import org.babyfish.jimmer.View;
 import org.babyfish.jimmer.impl.util.Classes;
 import org.babyfish.jimmer.meta.ImmutableType;
-import org.babyfish.jimmer.sql.fetcher.Fetcher;
 import org.babyfish.jimmer.spring.core.page.Page;
 import org.babyfish.jimmer.spring.core.page.Pageable;
 import org.babyfish.jimmer.spring.core.page.Sort;
+import org.babyfish.jimmer.sql.fetcher.Fetcher;
 import org.noear.solon.core.util.GenericUtil;
 
 import java.lang.reflect.Method;
