@@ -11,11 +11,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.babyfish.jimmer.jackson.ImmutableModule;
+import org.babyfish.jimmer.spring.cfg.SqlClientInitializer;
 import org.babyfish.jimmer.spring.core.JimmerAdapter;
 import org.babyfish.jimmer.spring.core.annotation.Db;
 import org.babyfish.jimmer.spring.core.interceptor.XmCacheInterceptor;
 import org.babyfish.jimmer.spring.core.interceptor.XmCachePutInterceptor;
 import org.babyfish.jimmer.spring.core.interceptor.XmCacheRemoveInterceptor;
+import org.babyfish.jimmer.sql.JSqlClient;
+import org.babyfish.jimmer.sql.kt.KSqlClient;
 import org.noear.solon.Solon;
 import org.noear.solon.SolonApp;
 import org.noear.solon.Utils;
@@ -35,6 +38,9 @@ import org.noear.solon.serialization.jackson.JacksonActionExecutor;
 import org.noear.solon.serialization.jackson.JacksonSerializer;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.databind.MapperFeature.PROPAGATE_TRANSIENT_MARKER;
 import static com.fasterxml.jackson.databind.MapperFeature.SORT_PROPERTIES_ALPHABETICALLY;
@@ -83,6 +89,30 @@ public class XmJimmerPluginImp implements Plugin {
             // solon 天生支持多数据源di注入，所以这里初始化一个 JimmerAdapter Bean用来管理多个 sqlClient（多数据源），实际上把JimmerAdapter交给solon托管
             // 之后可以监听 JimmerAdapter Bean的完成状态来完成注入
             JimmerAdapterManager.register(context);
+
+        });
+
+
+        // 真正初始化 jimmer
+        context.lifecycle(999999 + 1, () -> {
+            while (!JimmerAdapterManager.isIsRegisterDone()) {
+            }
+            final Map<String, JimmerAdapter> dbMap = JimmerAdapterManager.getDbMap();
+
+            final List<JSqlClient> javaSqlClients =new ArrayList<>();
+            final List<KSqlClient> kotlinSqlClients = new ArrayList<>();
+            for (JimmerAdapter jimmerAdapter : dbMap.values()) {
+                final Object sqlClient = jimmerAdapter.sqlClient();
+                if (sqlClient instanceof JSqlClient) {
+                    javaSqlClients.add((JSqlClient) sqlClient);
+                }
+
+                if (sqlClient instanceof KSqlClient) {
+                    kotlinSqlClients.add((KSqlClient) sqlClient);
+                }
+
+            }
+            Solon.context().wrapAndPut(SqlClientInitializer.class, new SqlClientInitializer(javaSqlClients, kotlinSqlClients));
         });
 
         // 处理 @Db 的类文件
@@ -112,8 +142,6 @@ public class XmJimmerPluginImp implements Plugin {
 
         log.info("{} 包加载完毕!", JIMMER_PLUGIN_NAME);
     }
-
-
 
 
     private static void getObjectMapper(ObjectMapper objectMapper) {

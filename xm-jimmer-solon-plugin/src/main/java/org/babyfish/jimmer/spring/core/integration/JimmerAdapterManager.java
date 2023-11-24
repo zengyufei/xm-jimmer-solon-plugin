@@ -23,6 +23,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class JimmerAdapterManager {
 
+    private static boolean isRegisterDone = false;
+
     private final static ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     private static List<BeanWrap> dsWraps = new ArrayList<>();
@@ -100,6 +102,7 @@ public class JimmerAdapterManager {
         for (BeanWrap dsWrap : dsWraps) {
             getClient(ctx, dsWrap);
         }
+        isRegisterDone = true;
     }
 
     /**
@@ -116,4 +119,11 @@ public class JimmerAdapterManager {
         return adapter;
     }
 
+    public static boolean isIsRegisterDone() {
+        return isRegisterDone;
+    }
+
+    public static Map<String, JimmerAdapter> getDbMap() {
+        return dbMap;
+    }
 }

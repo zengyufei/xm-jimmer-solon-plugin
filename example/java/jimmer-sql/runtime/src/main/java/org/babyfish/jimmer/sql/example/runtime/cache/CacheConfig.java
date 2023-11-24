@@ -4,19 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.babyfish.jimmer.meta.ImmutableProp;
 import org.babyfish.jimmer.meta.ImmutableType;
 import org.babyfish.jimmer.spring.cache.CaffeineBinder;
-import org.babyfish.jimmer.spring.cache.RedisCaches;
-import org.babyfish.jimmer.spring.cache.RedisHashBinder;
-import org.babyfish.jimmer.spring.cache.RedisValueBinder;
+import org.babyfish.jimmer.spring.core.redis.RedisBinder;
 import org.babyfish.jimmer.sql.cache.AbstractCacheFactory;
 import org.babyfish.jimmer.sql.cache.Cache;
 import org.babyfish.jimmer.sql.cache.CacheFactory;
-import org.babyfish.jimmer.sql.cache.chain.*;
+import org.babyfish.jimmer.sql.cache.chain.ChainCacheBuilder;
 import org.babyfish.jimmer.sql.example.model.BookStoreProps;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.babyfish.jimmer.sql.example.runtime.TenantProvider;
+import org.noear.solon.annotation.Bean;
+import org.noear.solon.annotation.Configuration;
+import org.noear.solon.annotation.Inject;
+import org.noear.solon.cache.redisson.RedissonCacheService;
+import org.noear.solon.data.cache.CacheService;
 
 import java.time.Duration;
 import java.util.List;
@@ -25,16 +24,24 @@ import java.util.List;
 // If you are a beginner, please ignore this class,
 // for non-cache mode, this class will never be used.
 // -----------------------------
-@ConditionalOnProperty("spring.redis.host")
 @Configuration
 public class CacheConfig {
 
+    @Bean(typed = true) //typed 表示可类型注入 //即默认
+    public TenantProvider getTenantProvider() {
+        return new TenantProvider();
+    }
+
+    @Bean(typed = true) //typed 表示可类型注入 //即默认
+    public CacheService cache1(@Inject("${demo.cache1}") RedissonCacheService cache) {
+        return cache;
+    }
+
     @Bean
-    public CacheFactory cacheFactory( // ❶
-            RedisConnectionFactory connectionFactory,
-            ObjectMapper objectMapper
+    public CacheFactory cacheFactory(
+            @Inject CacheService cacheService,
+            @Inject ObjectMapper objectMapper
     ) {
-        RedisTemplate<String, byte[]> redisTemplate = RedisCaches.cacheRedisTemplate(connectionFactory);
 
         /*
          * Single-view caches:
@@ -57,7 +64,7 @@ public class CacheConfig {
             public Cache<?, ?> createObjectCache(ImmutableType type) { // ❷
                 return new ChainCacheBuilder<>()
                         .add(new CaffeineBinder<>(512, Duration.ofSeconds(1)))
-                        .add(new RedisValueBinder<>(redisTemplate, objectMapper, type, Duration.ofMinutes(10)))
+                        .add(new RedisBinder<>(cacheService, objectMapper, type, null, Duration.ofMinutes(10), 30))
                         .build();
             }
 
@@ -67,7 +74,7 @@ public class CacheConfig {
                 return createPropCache(
                         getFilterState().isAffected(prop.getTargetType()), // ❹
                         prop,
-                        redisTemplate,
+                        cacheService,
                         objectMapper,
                         Duration.ofMinutes(5)
                 );
@@ -79,7 +86,7 @@ public class CacheConfig {
                 return createPropCache(
                         getFilterState().isAffected(prop.getTargetType()), // ❻
                         prop,
-                        redisTemplate,
+                        cacheService,
                         objectMapper,
                         Duration.ofMinutes(5)
                 );
@@ -92,7 +99,7 @@ public class CacheConfig {
                         prop.equals(BookStoreProps.AVG_PRICE.unwrap()) ||
                                 prop.equals(BookStoreProps.NEWEST_BOOKS.unwrap()),
                         prop,
-                        redisTemplate,
+                        cacheService,
                         objectMapper,
                         Duration.ofHours(1)
                 );
@@ -103,7 +110,7 @@ public class CacheConfig {
     private static <K, V> Cache<K, V> createPropCache(
             boolean isMultiView,
             ImmutableProp prop,
-            RedisTemplate<String, byte[]> redisTemplate,
+            CacheService cacheService,
             ObjectMapper objectMapper,
             Duration redisDuration
     ) {
@@ -119,13 +126,13 @@ public class CacheConfig {
          */
         if (isMultiView) { // ❽
             return new ChainCacheBuilder<K, V>()
-                    .add(new RedisHashBinder<>(redisTemplate, objectMapper, prop, redisDuration))
+                .add(new RedisBinder<>(cacheService, objectMapper, null, prop, redisDuration, 30))
                     .build();
         }
 
         return new ChainCacheBuilder<K, V>()
                 .add(new CaffeineBinder<>(512, Duration.ofSeconds(1)))
-                .add(new RedisValueBinder<>(redisTemplate, objectMapper, prop, redisDuration))
+                .add(new RedisBinder<>(cacheService, objectMapper, null, prop, redisDuration, 30))
                 .build();
     }
 }

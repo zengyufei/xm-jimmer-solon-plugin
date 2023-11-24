@@ -4,7 +4,7 @@ import org.babyfish.jimmer.ImmutableObjects;
 import org.babyfish.jimmer.sql.DraftInterceptor;
 import org.babyfish.jimmer.sql.example.model.common.BaseEntityDraft;
 import org.babyfish.jimmer.sql.example.model.common.BaseEntityProps;
-import org.springframework.stereotype.Component;
+import org.noear.solon.annotation.Component;
 
 import java.time.LocalDateTime;
 

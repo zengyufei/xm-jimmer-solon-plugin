@@ -1,3 +1,4 @@
+solon.env: dev
 
 datasource.db:
   type: "com.zaxxer.hikari.HikariDataSource"
@@ -26,3 +27,15 @@ jimmer:
   client:
     ts:
       path: /ts.zip
+
+demo.cache1:
+  driverType: "redis" #驱动类型
+  keyHeader: "demo" #默认为 ${solon.app.name} ，可不配置
+  defSeconds: 30 #默认为 30，可不配置
+  server: "localhost:6379"
+  db: 0 #默认为 0，可不配置
+#  password: ""
+  idleConnectionTimeout: 10000
+  connectTimeout: 10000
+
+demo.default-tenant: 1

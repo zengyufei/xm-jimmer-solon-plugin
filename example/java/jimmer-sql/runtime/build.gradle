@@ -3,7 +3,9 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
 }
 
 dependencies {
@@ -12,17 +14,17 @@ dependencies {
     api project(":repository")
 
     // For RedisConnectionFactory
-    api "org.springframework.data:spring-data-redis:${springBootVersion}"
+//    api "org.springframework.data:spring-data-redis:${springBootVersion}"
 
     // For HttpServletRequest(javax or jakatra)
-    api "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+//    api "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
 
     // For @KafkaListener
-    api "org.springframework.kafka:spring-kafka:${springBootVersion}"
+//    api "org.springframework.kafka:spring-kafka:${springBootVersion}"
 
     api 'org.apache.kafka:connect-api:0.10.0.0'
 
-    api 'org.springdoc:springdoc-openapi-ui:1.6.13'
+//    api 'org.springdoc:springdoc-openapi-ui:1.6.13'
 }
 
 java {

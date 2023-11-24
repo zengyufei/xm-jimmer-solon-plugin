@@ -1,30 +1,27 @@
 package org.babyfish.jimmer.sql.example.runtime.resolver;
 
 import org.babyfish.jimmer.lang.Ref;
+import org.babyfish.jimmer.spring.core.annotation.Db;
 import org.babyfish.jimmer.sql.JSqlClient;
 import org.babyfish.jimmer.sql.TransientResolver;
 import org.babyfish.jimmer.sql.event.AssociationEvent;
 import org.babyfish.jimmer.sql.event.EntityEvent;
 import org.babyfish.jimmer.sql.example.model.Book;
-import org.babyfish.jimmer.sql.example.repository.BookRepository;
 import org.babyfish.jimmer.sql.example.model.BookProps;
 import org.babyfish.jimmer.sql.example.model.BookStore;
 import org.babyfish.jimmer.sql.example.model.BookStoreProps;
+import org.babyfish.jimmer.sql.example.repository.BookRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
+import org.noear.solon.annotation.Component;
 
 import java.util.*;
 
-@Component
+@Component(value = "bookStoreNewestBooksResolver")
 public class BookStoreNewestBooksResolver implements TransientResolver<Long, List<Long>> { // ❶
 
-    private final BookRepository bookRepository;
-
-    public BookStoreNewestBooksResolver(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
+    @Db
+    private BookRepository bookRepository;
 
     private JSqlClient sqlClient() {
         return bookRepository.sql();

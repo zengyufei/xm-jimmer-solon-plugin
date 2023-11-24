@@ -5,8 +5,8 @@ import org.apache.kafka.connect.data.Schema;
 import org.babyfish.jimmer.sql.JSqlClient;
 import org.babyfish.jimmer.sql.example.model.BookProps;
 import org.babyfish.jimmer.sql.runtime.Customizer;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
+import org.noear.solon.annotation.Component;
+import org.noear.solon.annotation.Condition;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -17,10 +17,7 @@ import java.util.Base64;
 // If you are a beginner, please ignore this class,
 // for non-cache mode, this class will never be used.
 // -----------------------------
-@ConditionalOnProperty(
-        name = "spring.profiles.active",
-        havingValue = "debezium"
-)
+@Condition(onProperty = "${solon.env} = 'debezium'")
 @Component
 public class DebeziumCustomizer implements Customizer {
 
