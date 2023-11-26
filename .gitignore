@@ -40,7 +40,7 @@ out/
 .vscode/
 
 ### module ###
-/example/java/jimmer-cloud/
-/example/java/jimmer-sql-graphql/
-/example/kotlin/
-/example/react/
+/example/java/jimmer-cloud
+/example/java/jimmer-sql-graphql
+/example/kotlin
+/example/react
