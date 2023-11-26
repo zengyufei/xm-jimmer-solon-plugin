@@ -21,7 +21,20 @@ input UserDelInput {
 
 specification UserSpecification {
 
-    #allScalars(this) - userId // Remove id
+//    #allScalars(this)
+//    - userId
+//    - userName
+//    - createId
+//    - updateId
+//    - updateTime
+
+    isImported
+    importTime
+    isSystemDefault
+    status
+    createId
+
+    like/i(userName)
 
     ge(createTime)
 

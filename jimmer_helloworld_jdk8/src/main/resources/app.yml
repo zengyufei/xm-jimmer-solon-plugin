@@ -24,3 +24,8 @@ demo.cache1:
 #  password: ""
   idleConnectionTimeout: 10000
   connectTimeout: 10000
+
+knife4j.enable: true
+knife4j.setting.enableOpenApi: false
+knife4j.setting.enableSwaggerModels: false
+knife4j.setting.enableFooter: false

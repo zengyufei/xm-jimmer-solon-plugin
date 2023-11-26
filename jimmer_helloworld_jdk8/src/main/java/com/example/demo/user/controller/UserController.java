@@ -10,22 +10,22 @@ import com.example.demo.user.entity.dto.UserGetInput;
 import com.example.demo.user.entity.dto.UserInput;
 import com.example.demo.user.entity.dto.UserSpecification;
 import com.example.demo.user.repository.UserRepository;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.babyfish.jimmer.client.FetchBy;
-import org.babyfish.jimmer.client.ThrowsAll;
 import org.babyfish.jimmer.spring.core.annotation.Db;
 import org.babyfish.jimmer.spring.core.page.Page;
 import org.babyfish.jimmer.spring.core.page.PageRequest;
 import org.babyfish.jimmer.spring.model.SortUtils;
-import org.babyfish.jimmer.sql.JSqlClient;
 import org.babyfish.jimmer.sql.fetcher.Fetcher;
-import org.babyfish.jimmer.sql.runtime.SaveErrorCode;
 import org.jetbrains.annotations.Nullable;
 import org.noear.solon.annotation.*;
 import org.noear.solon.validation.annotation.Valid;
 
 import java.util.List;
 
+@Api("用户接口")
 @Slf4j
 @Valid
 @Controller
@@ -48,12 +48,14 @@ public class UserController {
             UserFetcher.$
                     .allScalarFields();
 
+    @ApiOperation("简单查询列表接口")
     @Post
     @Mapping("/simpleList")
     public List<@FetchBy("SIMPLE_FETCHER") User> simpleList() {
         return userRepository.findAll(SIMPLE_FETCHER, UserProps.USER_NAME, UserProps.STATUS, UserProps.IS_SYSTEM_DEFAULT);
     }
 
+    @ApiOperation("超级分页查询列表接口")
     @Post
     @Mapping("/list")
     public Page<@FetchBy("DEFAULT_FETCHER") User> list(
@@ -70,6 +72,7 @@ public class UserController {
     }
 
 
+    @ApiOperation("单个查询接口")
     @Post
     @Mapping("/get")
     @Nullable
@@ -81,12 +84,14 @@ public class UserController {
         return null;
     }
 
+    @ApiOperation("新增接口")
     @Post
     @Mapping("/add")
     public User add(UserInput input) {
         return userRepository.save(input);
     }
 
+    @ApiOperation("删除接口")
     @Post
     @Mapping("/del")
     public void delById(UserDelInput input) {
@@ -96,9 +101,7 @@ public class UserController {
         }
     }
 
-    /**
-     * 主动抛出异常 - 用于测试
-     */
+    @ApiOperation("主动抛出异常")
     @Get
     @Mapping("/exception")
     public Boolean exception() throws Exception {

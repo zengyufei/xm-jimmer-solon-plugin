@@ -1,6 +1,8 @@
 package com.example.demo.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.xiaoymin.knife4j.solon.extension.OpenApiExtensionResolver;
+import io.swagger.models.Scheme;
 import org.babyfish.jimmer.meta.ImmutableProp;
 import org.babyfish.jimmer.meta.ImmutableType;
 import org.babyfish.jimmer.spring.cache.CaffeineBinder;
@@ -14,6 +16,7 @@ import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
 import org.noear.solon.cache.redisson.RedissonCacheService;
 import org.noear.solon.data.cache.CacheService;
+import org.noear.solon.docs.DocDocket;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,11 +24,29 @@ import java.util.List;
 //配置缓存服务
 @Configuration
 public class Config {
+
+    // knife4j 的配置，由它承载
+    @Inject
+    OpenApiExtensionResolver openApiExtensionResolver;
+
+    /**
+     * 简单点的
+     */
+    @Bean("appApi")
+    public DocDocket appApi() {
+        //根据情况增加 "knife4j.setting" （可选）
+        return new DocDocket()
+                .vendorExtensions(openApiExtensionResolver.buildExtensions())
+                .groupName("app端接口")
+                .schemes(Scheme.HTTP.toValue())
+                .apis("com.example.demo");
+
+    }
+
     @Bean(typed = true) //typed 表示可类型注入 //即默认
     public CacheService cache1(@Inject("${demo.cache1}") RedissonCacheService cache) {
         return cache;
     }
-
 
     @Bean
     public CacheFactory cacheFactory(

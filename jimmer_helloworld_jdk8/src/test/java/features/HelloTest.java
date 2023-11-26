@@ -24,9 +24,8 @@ import java.io.IOException;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HelloTest extends HttpTester {
 
-
     @Test
-    public void hello3() throws IOException, InterruptedException {
+    public void hello1() throws IOException, InterruptedException {
         {
             final String result = path("/user/simpleList")
                     .bodyJson("{}")
@@ -37,7 +36,7 @@ public class HelloTest extends HttpTester {
     }
 
     @Test
-    public void hello4() throws IOException, InterruptedException {
+    public void hello2() throws IOException, InterruptedException {
         {
             final String result = path("/user/list")
                     .bodyJson("{\"userName\": \"User 0\"}")
@@ -48,7 +47,7 @@ public class HelloTest extends HttpTester {
     }
 
     @Test
-    public void hello5() throws IOException, InterruptedException {
+    public void hello3() throws IOException, InterruptedException {
         {
             final String result = path("/user/get")
                     .bodyJson("{\"userId\": \"user_11\"}")
@@ -59,7 +58,7 @@ public class HelloTest extends HttpTester {
     }
 
     @Test
-    public void hello6() throws IOException, InterruptedException {
+    public void hello4() throws IOException, InterruptedException {
         {
 
             final String result = path("/user/list")
@@ -88,7 +87,7 @@ public class HelloTest extends HttpTester {
     }
 
     @Test
-    public void hello7() throws IOException, InterruptedException {
+    public void hello5() throws IOException, InterruptedException {
         String id = "";
         {
             final String result = path("/user/list")

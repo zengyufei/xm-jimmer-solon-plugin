@@ -27,26 +27,11 @@
     </properties>
 
     <dependencies>
-
-
-        <dependency>
-            <groupId>vip.xunmo</groupId>
-            <artifactId>xm-h2-solon-plugin</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>vip.xunmo</groupId>
             <artifactId>xm-jimmer-solon-plugin</artifactId>
             <version>${jimmer.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>cn.hutool</groupId>
-                    <artifactId>hutool-all</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-
-
 
 
         <dependency>
@@ -54,23 +39,23 @@
             <artifactId>lombok</artifactId>
             <version>1.18.30</version>
         </dependency>
+
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>4.0.3</version>
         </dependency>
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>2.2.220</version>
         </dependency>
 
-
-        <!-- 必须注释掉 -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.noear</groupId>-->
-        <!--            <artifactId>solon-api</artifactId>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.noear</groupId>
+            <artifactId>solon-openapi2-knife4j</artifactId>
+        </dependency>
 
         <!-- 必须引入 -->
         <dependency>
@@ -88,7 +73,6 @@
             <groupId>org.noear</groupId>
             <artifactId>solon.boot.jlhttp</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.noear</groupId>
@@ -112,18 +96,6 @@
             <version>2.9.1</version>
         </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>vip.xunmo</groupId>
-                <artifactId>xm-bom</artifactId>
-                <version>1.0.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <finalName>${project.artifactId}</finalName>
