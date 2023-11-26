@@ -2,6 +2,10 @@ plugins {
     id 'java'
 }
 
+ext {
+    jimmerVersion = "0.8.46"
+}
+
 repositories {
     mavenLocal()
     mavenCentral()

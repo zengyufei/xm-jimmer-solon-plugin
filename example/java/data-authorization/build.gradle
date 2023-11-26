@@ -1,5 +1,6 @@
 plugins {
-    id("java")
+    id 'java'
+    id 'java-library'
 }
 
 ext {
@@ -17,19 +18,39 @@ repositories {
 
 dependencies {
 
-    implementation platform("org.noear:solon-parent:2.6.0")
+    api platform("org.noear:solon-parent:2.6.0")
 
-    implementation "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
+    api "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
     annotationProcessor "org.babyfish.jimmer:jimmer-apt:${jimmerVersion}"
 
     runtimeOnly 'com.h2database:h2:2.1.212'
-    implementation 'com.zaxxer:HikariCP:4.0.3'
+    api 'com.zaxxer:HikariCP:4.0.3'
 
     runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.8'
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.8'
 
-    testApi platform("org.junit:junit-bom:5.9.1")
-    testApi "org.junit.jupiter:junit-jupiter"
+    testImplementation  platform("org.junit:junit-bom:5.9.1")
+    testImplementation  "org.junit.jupiter:junit-jupiter"
+}
+
+
+//指定使用什么版本的JDK语法编译源代码,跟编译环境有关,在有java插件时才能用
+sourceCompatibility = JavaVersion.VERSION_1_8
+//指定生成特定于某个JDK版本的class文件:跟运行环境有关,在有java插件时才能用
+targetCompatibility = JavaVersion.VERSION_1_8
+
+//业务编码字符集,注意这是指定源码解码的字符集[编译器]
+compileJava.options.encoding "UTF-8"
+//测试编码字符集,注意这是指定源码解码的字符集[编译器]
+compileTestJava.options.encoding "UTF-8"
+//编译JAVA文件时采用UTF-8:注意这是指定源码编码的字符集【源文件】
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+//编译JAVA文件时采用UTF-8:注意这是指定文档编码的字符集【源文件】
+tasks.withType(Javadoc) {
+    options.encoding = "UTF-8"
 }
 
 tasks.test {

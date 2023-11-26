@@ -38,3 +38,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### module ###
+example/java/jimmer-cloud/
+example/java/jimmer-sql-graphql/
+example/kotlin/
+example/react/

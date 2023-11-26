@@ -13,6 +13,8 @@ dependencies {
     api project(":model")
     api project(":repository")
 
+//    api("org.noear:kafka-solon-cloud-plugin")
+
     // For RedisConnectionFactory
 //    api "org.springframework.data:spring-data-redis:${springBootVersion}"
 

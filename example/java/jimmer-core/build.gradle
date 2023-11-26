@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'java-library'
 }
 
 ext {
@@ -10,15 +11,36 @@ group 'org.babyfish.jimmer.example.core'
 version jimmerVersion
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
 }
 
 dependencies {
 
-    implementation "org.babyfish.jimmer:jimmer-core:${jimmerVersion}"
+    api "org.babyfish.jimmer:jimmer-core:${jimmerVersion}"
     annotationProcessor "org.babyfish.jimmer:jimmer-apt:${jimmerVersion}"
 
-    implementation 'javax.validation:validation-api:2.0.1.Final'
+    api 'javax.validation:validation-api:2.0.1.Final'
+}
+
+//指定使用什么版本的JDK语法编译源代码,跟编译环境有关,在有java插件时才能用
+sourceCompatibility = JavaVersion.VERSION_1_8
+//指定生成特定于某个JDK版本的class文件:跟运行环境有关,在有java插件时才能用
+targetCompatibility = JavaVersion.VERSION_1_8
+
+//业务编码字符集,注意这是指定源码解码的字符集[编译器]
+compileJava.options.encoding "UTF-8"
+//测试编码字符集,注意这是指定源码解码的字符集[编译器]
+compileTestJava.options.encoding "UTF-8"
+//编译JAVA文件时采用UTF-8:注意这是指定源码编码的字符集【源文件】
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+//编译JAVA文件时采用UTF-8:注意这是指定文档编码的字符集【源文件】
+tasks.withType(Javadoc) {
+    options.encoding = "UTF-8"
 }
 
 java {
