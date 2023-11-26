@@ -1,5 +1,7 @@
 package org.babyfish.jimmer.sql.example.service;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.babyfish.jimmer.client.FetchBy;
 import org.babyfish.jimmer.client.ThrowsAll;
 import org.babyfish.jimmer.spring.core.annotation.Db;
@@ -26,6 +28,7 @@ import java.util.List;
  * of the framework with small examples. Therefore, this example project no longer adheres to
  * dogmatism and directly adds spring web annotations to the service class.
  */
+@Api("作者模型")
 @Valid
 @Controller
 @Mapping("/author")
@@ -34,12 +37,14 @@ public class AuthorService {
     @Db
     private AuthorRepository authorRepository;
 
+    @ApiOperation("简单查询列表接口")
     @Get
     @Mapping("/simpleList")
     public List<@FetchBy("SIMPLE_FETCHER") Author> findSimpleAuthors() { // ❶ ❷ ❸
         return authorRepository.findAll(SIMPLE_FETCHER, AuthorProps.FIRST_NAME, AuthorProps.LAST_NAME);
     }
 
+    @ApiOperation("超级分页查询列表接口")
     @Post@Mapping("/list")
     public List<@FetchBy("DEFAULT_FETCHER") Author> findAuthors( // ❷
             AuthorSpecification specification
@@ -52,6 +57,7 @@ public class AuthorService {
         );
     }
 
+    @ApiOperation("单个查询接口")
     @Get@Mapping("/{id}")
     @Nullable
     public @FetchBy("COMPLEX_FETCHER") Author findComplexAuthor( // ❸
@@ -83,6 +89,7 @@ public class AuthorService {
                                     )
                     );
 
+    @ApiOperation("新增接口")
     @Put
     @Mapping
     @ThrowsAll(SaveErrorCode.class) // ❹
@@ -90,6 +97,7 @@ public class AuthorService {
         return authorRepository.save(input);
     }
 
+    @ApiOperation("删除接口")
     @Delete
     @Mapping("/{id}")
     public void deleteAuthor(@Path("id") long id) {

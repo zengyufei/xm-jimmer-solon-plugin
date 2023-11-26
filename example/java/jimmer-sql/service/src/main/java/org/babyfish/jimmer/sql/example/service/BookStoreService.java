@@ -1,5 +1,7 @@
 package org.babyfish.jimmer.sql.example.service;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.babyfish.jimmer.client.FetchBy;
 import org.babyfish.jimmer.client.ThrowsAll;
 import org.babyfish.jimmer.spring.core.annotation.Db;
@@ -24,6 +26,7 @@ import java.util.List;
  * of the framework with small examples. Therefore, this example project no longer adheres to
  * dogmatism and directly adds spring web annotations to the service class.
  */
+@Api("书店模型")
 @Valid
 @Controller
 @Mapping("/bookStore")
@@ -33,6 +36,7 @@ public class BookStoreService {
     private BookStoreRepository bookStoreRepository;
 
 
+    @ApiOperation("简单查询列表接口")
     @Get
     @Mapping("/simpleList")
     public List<@FetchBy("SIMPLE_FETCHER") BookStore> findSimpleStores() { // ❶
@@ -42,7 +46,9 @@ public class BookStoreService {
         );
     }
 
-    @Get@Mapping("/list")
+    @ApiOperation("超级分页查询列表接口")
+    @Get
+    @Mapping("/list")
     public List<@FetchBy("DEFAULT_FETCHER") BookStore> findStores() { // ❷
         return bookStoreRepository.findAll(
                 DEFAULT_FETCHER,
@@ -50,7 +56,9 @@ public class BookStoreService {
         );
     }
 
-    @Get@Mapping("/complexList")
+    @ApiOperation("全表查询书店列表 - 包含书本和作者信息")
+    @Get
+    @Mapping("/complexList")
     public List<@FetchBy("WITH_ALL_BOOKS_FETCHER") BookStore> findComplexStores() { // ❸
         return bookStoreRepository.findAll(
                 WITH_ALL_BOOKS_FETCHER,
@@ -58,18 +66,22 @@ public class BookStoreService {
         );
     }
 
-    @Get@Mapping("/{id}/withAllBooks")
+    @ApiOperation("查询指定书店列表 - 包含书本和作者信息")
+    @Get
+    @Mapping("/{id}/withAllBooks")
     @Nullable
     public @FetchBy("WITH_ALL_BOOKS_FETCHER") BookStore findComplexStoreWithAllBooks( // ❹
-            @Path("id") long id
+                                                                                      @Path("id") long id
     ) {
         return bookStoreRepository.findNullable(id, WITH_ALL_BOOKS_FETCHER);
     }
 
-    @Get@Mapping("/{id}/withNewestBooks")
+    @ApiOperation("查询指定书店列表 - 包含书本和作者信息及统计书本在店信息")
+    @Get
+    @Mapping("/{id}/withNewestBooks")
     @Nullable
     public @FetchBy("WITH_NEWEST_BOOKS_FETCHER") BookStore findComplexStoreWithNewestBooks( // ❺
-            @Path("id") long id
+                                                                                            @Path("id") long id
     ) {
         return bookStoreRepository.findNullable(id, WITH_NEWEST_BOOKS_FETCHER);
     }
@@ -108,13 +120,17 @@ public class BookStoreService {
                                     )
                     );
 
-    @Put@Mapping
+    @ApiOperation("新增接口")
+    @Put
+    @Mapping
     @ThrowsAll(SaveErrorCode.class) // ❻
     public BookStore saveBookStore(@Body BookStoreInput input) { // ❼
         return bookStoreRepository.save(input);
     }
 
-    @Delete@Mapping("/{id}")
+    @ApiOperation("删除接口")
+    @Delete
+    @Mapping("/{id}")
     public void deleteBookStore(@Path("id") long id) {
         bookStoreRepository.deleteById(id);
     }

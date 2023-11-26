@@ -9,6 +9,7 @@ repositories {
 }
 
 dependencies {
+    api "org.noear:solon-openapi2-knife4j"
     api "org.babyfish.jimmer:jimmer-sql:${jimmerVersion}"
     annotationProcessor "org.babyfish.jimmer:jimmer-apt:${jimmerVersion}"
 }

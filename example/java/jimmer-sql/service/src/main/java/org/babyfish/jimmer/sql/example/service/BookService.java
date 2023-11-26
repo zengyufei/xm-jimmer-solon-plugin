@@ -1,5 +1,7 @@
 package org.babyfish.jimmer.sql.example.service;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.babyfish.jimmer.client.FetchBy;
 import org.babyfish.jimmer.client.ThrowsAll;
 import org.babyfish.jimmer.spring.core.annotation.Db;
@@ -30,6 +32,7 @@ import java.util.List;
  * of the framework with small examples. Therefore, this example project no longer adheres to
  * dogmatism and directly adds spring web annotations to the service class.
  */
+@Api("书本模型")
 @Valid
 @Controller
 @Mapping("/book")
@@ -38,6 +41,7 @@ public class BookService {
     @Db
     private BookRepository bookRepository;
 
+    @ApiOperation("简单查询列表接口")
     @Get
     @Mapping("/simpleList")
     public List<@FetchBy("SIMPLE_FETCHER") Book> findSimpleBooks() { // ❶
@@ -48,7 +52,9 @@ public class BookService {
      * The functionality of this method is the same as
      * {@link #findBooksBySuperQBE(int, int, String, BookSpecification)}
      */
-    @Get@Mapping("/list")
+    @ApiOperation("普通分页查询列表接口")
+    @Get
+    @Mapping("/list")
     public Page<@FetchBy("DEFAULT_FETCHER") Book> findBooks( // ❷
                                                              @Param(defaultValue = "0") int pageIndex,
                                                              @Param(defaultValue = "5") int pageSize,
@@ -75,7 +81,9 @@ public class BookService {
      * The functionality of this method is the same as
      * {@link #findBooks(int, int, String, String, BigDecimal, BigDecimal, String, String)}
      */
-    @Get@Mapping("/list/bySuperQBE")
+    @ApiOperation("超级分页查询列表接口")
+    @Get
+    @Mapping("/list/bySuperQBE")
     public Page<@FetchBy("DEFAULT_FETCHER") Book> findBooksBySuperQBE(
             @Param(defaultValue = "0") int pageIndex,
             @Param(defaultValue = "5") int pageSize,
@@ -90,10 +98,12 @@ public class BookService {
         );
     }
 
-    @Get@Mapping("/{id}")
+    @ApiOperation("单个查询接口")
+    @Get
+    @Mapping("/{id}")
     @Nullable
     public @FetchBy("COMPLEX_FETCHER") Book findComplexBook( // ❸
-            @Path("id") long id
+                                                             @Path("id") long id
     ) {
         return bookRepository.findNullable(id, COMPLEX_FETCHER);
     }
@@ -129,6 +139,7 @@ public class BookService {
                                     .allScalarFields()
                     );
 
+    @ApiOperation("新增接口")
     @Put
     @Mapping
     @ThrowsAll(SaveErrorCode.class) // ❹
@@ -136,12 +147,15 @@ public class BookService {
         return bookRepository.save(input);
     }
 
-    @Put@Mapping("/composite")
+    @ApiOperation("新增接口 - 多表关系")
+    @Put
+    @Mapping("/composite")
     @ThrowsAll(SaveErrorCode.class) // ❻
     public Book saveCompositeBook(@Body CompositeBookInput input) { // ❼
         return bookRepository.save(input);
     }
 
+    @ApiOperation("删除接口")
     @Delete
     @Mapping("/{id}")
     public void deleteBook(@Path("id") long id) {

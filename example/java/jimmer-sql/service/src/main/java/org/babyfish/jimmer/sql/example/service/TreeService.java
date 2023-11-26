@@ -1,5 +1,7 @@
 package org.babyfish.jimmer.sql.example.service;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.babyfish.jimmer.client.FetchBy;
 import org.babyfish.jimmer.client.ThrowsAll;
 import org.babyfish.jimmer.spring.core.annotation.Db;
@@ -29,6 +31,7 @@ import java.util.List;
  * of the framework with small examples. Therefore, this example project no longer adheres to
  * dogmatism and directly adds spring web annotations to the service class.
  */
+@Api("树结构模型")
 @Valid
 @Controller
 @Mapping("/tree")
@@ -40,6 +43,7 @@ public class TreeService {
     private TreeNodeRepository treeNodeRepository;
 
 
+    @ApiOperation("平铺子节点")
     @Get
     @Mapping("/flatNodes")
     public List<FlatTreeNodeView> flatNodes(
@@ -51,6 +55,7 @@ public class TreeService {
         );
     }
 
+    @ApiOperation("根据根节点名称查询子节点")
     @Get@Mapping("/roots/recursive")
     public List<@FetchBy("RECURSIVE_FETCHER") TreeNode> findRootTrees( // ❶
             @Param(required = false) String rootName
@@ -61,6 +66,7 @@ public class TreeService {
         );
     }
 
+    @ApiOperation("保存树")
     @Put
     @Mapping("/root/recursive")
     @ThrowsAll(SaveErrorCode.class)
@@ -87,6 +93,7 @@ public class TreeService {
         return treeNodeRepository.save(rootNode);
     }
 
+    @ApiOperation("删除树节点及下级")
     @Delete@Mapping("/{id}")
     public void deleteTree(@Path long id) {
         treeNodeRepository.deleteById(id);

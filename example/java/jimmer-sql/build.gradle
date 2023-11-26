@@ -28,7 +28,7 @@ subprojects {
     dependencies {
 
         api "cn.hutool:hutool-all:5.8.20"
-        api  "org.noear:logback-solon-plugin"
+        api "org.noear:logback-solon-plugin"
 
     }
 

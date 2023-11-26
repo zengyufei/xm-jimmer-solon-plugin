@@ -4,8 +4,8 @@ import org.babyfish.jimmer.sql.example.model.common.TenantAwareProps;
 import org.babyfish.jimmer.sql.example.runtime.TenantProvider;
 import org.babyfish.jimmer.sql.filter.Filter;
 import org.babyfish.jimmer.sql.filter.FilterArgs;
-import org.noear.solon.Solon;
 import org.noear.solon.annotation.Component;
+import org.noear.solon.annotation.Inject;
 
 /*
  * see JSqlClient.Builder.addFilters
@@ -15,10 +15,12 @@ import org.noear.solon.annotation.Component;
 @Component
 public class TenantFilterForNonCacheMode implements Filter<TenantAwareProps> { // ❶
 
+    @Inject
+    private TenantProvider tenantProvider;
 
     @Override
     public void filter(FilterArgs<TenantAwareProps> args) {
-        String tenant = Solon.context().getBean(TenantProvider.class).get();
+        String tenant = tenantProvider.get();
         if (tenant != null) {
             args.where(args.getTable().tenant().eq(tenant));
         }

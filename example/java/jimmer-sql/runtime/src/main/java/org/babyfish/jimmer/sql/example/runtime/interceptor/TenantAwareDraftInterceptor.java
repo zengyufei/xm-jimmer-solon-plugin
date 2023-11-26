@@ -6,7 +6,6 @@ import org.babyfish.jimmer.sql.example.model.common.TenantAwareDraft;
 import org.babyfish.jimmer.sql.example.model.common.TenantAwareProps;
 import org.babyfish.jimmer.sql.example.runtime.TenantProvider;
 import org.jetbrains.annotations.NotNull;
-import org.noear.solon.Solon;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
 
@@ -15,12 +14,14 @@ public class TenantAwareDraftInterceptor implements DraftInterceptor<TenantAware
 
     @Inject("${demo.default-tenant}")
     private String defaultTenant;
+    @Inject
+    private TenantProvider tenantProvider;
 
 
     @Override
     public void beforeSave(@NotNull TenantAwareDraft draft, boolean isNew) { // ❷
         if (!ImmutableObjects.isLoaded(draft, TenantAwareProps.TENANT)) { // ❸
-            String tenant = Solon.context().getBean(TenantProvider.class).get();
+            String tenant = tenantProvider.get();
             if (tenant == null) {
                 tenant = defaultTenant;
             }

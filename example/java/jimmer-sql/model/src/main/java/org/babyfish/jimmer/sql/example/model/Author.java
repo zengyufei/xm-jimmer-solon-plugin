@@ -1,11 +1,13 @@
 package org.babyfish.jimmer.sql.example.model;
 
+import io.swagger.annotations.ApiModel;
 import org.babyfish.jimmer.Formula;
 import org.babyfish.jimmer.sql.*;
 import org.babyfish.jimmer.sql.example.model.common.BaseEntity;
 
 import java.util.List;
 
+@ApiModel("作者实体")
 @Entity
 public interface Author extends BaseEntity {
 

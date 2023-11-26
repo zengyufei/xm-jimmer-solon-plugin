@@ -21,7 +21,7 @@ import java.util.Map;
 
 public interface BookRepository extends JRepository<Book, Long> { // ❶
 
-    BookTable table = BookTable.$;
+    BookTable book = BookTable.$;
 
     /**
      * Manually implement complex query.
@@ -42,20 +42,20 @@ public interface BookRepository extends JRepository<Book, Long> { // ❶
         return pager(pageable) // ❸
                 .execute(
                         sql()
-                                .createQuery(table)
+                                .createQuery(book)
                                 .whereIf( // ❹
                                         name != null && !name.isEmpty(),
-                                        table.name().ilike(name)
+                                        book.name().ilike(name)
                                 )
-                                .whereIf(minPrice != null, () -> table.price().ge(minPrice))
-                                .whereIf(maxPrice != null, () -> table.price().le(maxPrice))
+                                .whereIf(minPrice != null, () -> book.price().ge(minPrice))
+                                .whereIf(maxPrice != null, () -> book.price().le(maxPrice))
                                 .whereIf( // ❺
                                         storeName != null && !storeName.isEmpty(),
-                                        table.store().name().ilike(storeName) // ❻
+                                        book.store().name().ilike(storeName) // ❻
                                 )
                                 .whereIf( // ❼
                                         authorName != null && !authorName.isEmpty(),
-                                        table.id().in(sql()
+                                        book.id().in(sql()
                                                 .createSubQuery(author) //  ❽
                                                 .where(
                                                         Predicate.or(
@@ -66,8 +66,8 @@ public interface BookRepository extends JRepository<Book, Long> { // ❶
                                                 .select(author.books().id()) // ❾
                                         )
                                 )
-                                .orderBy(SpringOrders.toOrders(table, pageable.getSort())) // ❿
-                                .select(table.fetch(fetcher)) // ⓫
+                                .orderBy(SpringOrders.toOrders(book, pageable.getSort())) // ❿
+                                .select(book.fetch(fetcher)) // ⓫
                 );
     }
 
@@ -86,12 +86,12 @@ public interface BookRepository extends JRepository<Book, Long> { // ❶
     default Map<Long, BigDecimal> findAvgPriceGroupByStoreId(Collection<Long> storeIds) {
         return Tuple2.toMap(
                 sql()
-                        .createQuery(table)
-                        .where(table.store().id().in(storeIds)) // ⓬
-                        .groupBy(table.store().id()) // ⓭
+                        .createQuery(book)
+                        .where(book.store().id().in(storeIds)) // ⓬
+                        .groupBy(book.store().id()) // ⓭
                         .select(
-                                table.store().id(), // ⓮
-                                table.price().avg()
+                                book.store().id(), // ⓮
+                                book.price().avg()
                         )
                         .execute()
         );
@@ -100,22 +100,22 @@ public interface BookRepository extends JRepository<Book, Long> { // ❶
     default Map<Long, List<Long>> findNewestIdsGroupByStoreId(Collection<Long> storeIds) {
         return Tuple2.toMultiMap(
                 sql()
-                        .createQuery(table)
+                        .createQuery(book)
                         .where(
-                                Expression.tuple(table.name(), table.edition()).in(
-                                        sql().createSubQuery(table) // ⓯
+                                Expression.tuple(book.name(), book.edition()).in(
+                                        sql().createSubQuery(book) // ⓯
                                                 // Apply root predicate to sub query is faster here.
-                                                .where(table.store().id().in(storeIds)) // ⓰
-                                                .groupBy(table.name())
+                                                .where(book.store().id().in(storeIds)) // ⓰
+                                                .groupBy(book.name())
                                                 .select(
-                                                        table.name(),
-                                                        table.edition().max()
+                                                        book.name(),
+                                                        book.edition().max()
                                                 )
                                 )
                         )
                         .select(
-                                table.store().id(), // ⓱
-                                table.id()
+                                book.store().id(), // ⓱
+                                book.id()
                         )
                         .execute()
         );

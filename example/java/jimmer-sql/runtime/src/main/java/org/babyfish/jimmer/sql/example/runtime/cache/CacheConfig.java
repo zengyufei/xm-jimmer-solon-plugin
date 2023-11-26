@@ -10,7 +10,6 @@ import org.babyfish.jimmer.sql.cache.Cache;
 import org.babyfish.jimmer.sql.cache.CacheFactory;
 import org.babyfish.jimmer.sql.cache.chain.ChainCacheBuilder;
 import org.babyfish.jimmer.sql.example.model.BookStoreProps;
-import org.babyfish.jimmer.sql.example.runtime.TenantProvider;
 import org.noear.solon.annotation.Bean;
 import org.noear.solon.annotation.Configuration;
 import org.noear.solon.annotation.Inject;
@@ -26,11 +25,6 @@ import java.util.List;
 // -----------------------------
 @Configuration
 public class CacheConfig {
-
-    @Bean(typed = true) //typed 表示可类型注入 //即默认
-    public TenantProvider getTenantProvider() {
-        return new TenantProvider();
-    }
 
     @Bean(typed = true) //typed 表示可类型注入 //即默认
     public CacheService cache1(@Inject("${demo.cache1}") RedissonCacheService cache) {

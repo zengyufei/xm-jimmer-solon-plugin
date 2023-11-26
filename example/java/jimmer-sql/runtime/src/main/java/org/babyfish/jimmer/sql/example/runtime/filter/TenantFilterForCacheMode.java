@@ -4,8 +4,10 @@ import org.babyfish.jimmer.sql.event.EntityEvent;
 import org.babyfish.jimmer.sql.example.model.common.TenantAwareProps;
 import org.babyfish.jimmer.sql.example.runtime.TenantProvider;
 import org.babyfish.jimmer.sql.filter.CacheableFilter;
-import org.noear.solon.Solon;
+import org.babyfish.jimmer.sql.filter.Filter;
+import org.babyfish.jimmer.sql.filter.FilterArgs;
 import org.noear.solon.annotation.Component;
+import org.noear.solon.annotation.Inject;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -30,14 +32,22 @@ import java.util.TreeMap;
 // to support multi-view caching together.
 // -----------------------------
 @Component
-public class TenantFilterForCacheMode
-        extends TenantFilterForNonCacheMode
-        implements CacheableFilter<TenantAwareProps> { // ❶
+public class TenantFilterForCacheMode implements CacheableFilter<TenantAwareProps>, Filter<TenantAwareProps> { // ❶
 
+    @Inject
+    private TenantProvider tenantProvider;
+
+    @Override
+    public void filter(FilterArgs<TenantAwareProps> args) {
+        String tenant = tenantProvider.get();
+        if (tenant != null) {
+            args.where(args.getTable().tenant().eq(tenant));
+        }
+    }
 
     @Override
     public SortedMap<String, Object> getParameters() { // ❷
-        String tenant = Solon.context().getBean(TenantProvider.class).get();
+        String tenant = tenantProvider.get();
         if (tenant == null) {
             return null;
         }
