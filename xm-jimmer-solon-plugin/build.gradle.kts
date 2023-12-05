@@ -6,12 +6,12 @@ plugins {
     id("maven-publish")
 }
 group = "vip.xunmo"
-version = "0.8.46"
+version = "0.8.51"
 
 repositories {
     mavenLocal()
-    mavenCentral()
     maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
+    mavenCentral()
 }
 
 java {
@@ -30,12 +30,12 @@ dependencyManagement {
 
 dependencies {
 
-    api("org.babyfish.jimmer:jimmer-sql:0.8.46")
-    api("org.babyfish.jimmer:jimmer-sql-kotlin:0.8.46")
-    api("org.babyfish.jimmer:jimmer-client:0.8.46")
+    api("org.babyfish.jimmer:jimmer-sql:0.8.51")
+    api("org.babyfish.jimmer:jimmer-sql-kotlin:0.8.51")
+    api("org.babyfish.jimmer:jimmer-client:0.8.51")
 
-    testAnnotationProcessor("org.babyfish.jimmer:jimmer-apt:0.8.46")
-    kspTest("org.babyfish.jimmer:jimmer-ksp:0.8.46")
+    testAnnotationProcessor("org.babyfish.jimmer:jimmer-apt:0.8.51")
+    kspTest("org.babyfish.jimmer:jimmer-ksp:0.8.51")
 
     api("org.noear:solon")
     api("org.noear:solon-lib")

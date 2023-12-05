@@ -4,8 +4,10 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.babyfish.jimmer.client.meta.Metadata;
 import org.babyfish.jimmer.spring.cache.impl.TransactionCacheOperatorFlusher;
 import org.babyfish.jimmer.spring.cfg.JimmerProperties;
+import org.babyfish.jimmer.spring.client.MetadataFactoryBean;
 import org.babyfish.jimmer.spring.client.SolonCodeBasedExceptionAdvice;
 import org.babyfish.jimmer.spring.core.JimmerAdapter;
 import org.babyfish.jimmer.spring.core.Repository;
@@ -32,6 +34,9 @@ import org.noear.solon.core.wrap.ClassWrap;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * jimmer 适配器默认实现
@@ -42,6 +47,7 @@ import java.util.*;
 @Slf4j
 public class JimmerAdapterDefault implements JimmerAdapter {
 
+    protected final AppContext ctx;
     protected final BeanWrap dsWrap;
 
     protected final Props dsProps;
@@ -64,6 +70,7 @@ public class JimmerAdapterDefault implements JimmerAdapter {
      * 构建Sql工厂适配器，使用属性配置
      */
     protected JimmerAdapterDefault(AppContext ctx, BeanWrap dsWrap, Props dsProps) {
+        this.ctx = ctx;
         /*
          * 因为jimmerRepositoryFactory类的原因，不的不在此处初始化 sqlClient
          * */
@@ -74,7 +81,7 @@ public class JimmerAdapterDefault implements JimmerAdapter {
             this.dsProps = dsProps;
         }
 
-        final JimmerProperties jimmerProperties = initJimmerProperties(ctx, dsWrap);
+        jimmerProperties = initJimmerProperties(ctx, dsWrap);
 
         if (dsWrap.typed()) {
             // 统一异常处理
@@ -265,4 +272,6 @@ public class JimmerAdapterDefault implements JimmerAdapter {
     public JimmerProperties getJimmerProperties() {
         return jimmerProperties;
     }
+
+
 }

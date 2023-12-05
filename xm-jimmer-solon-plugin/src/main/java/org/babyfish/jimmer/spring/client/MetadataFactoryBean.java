@@ -1,207 +1,185 @@
-//package org.babyfish.jimmer.spring.client;
-//
-//import kotlin.jvm.JvmClassMappingKt;
-//import kotlin.reflect.KFunction;
-//import kotlin.reflect.KType;
-//import org.babyfish.jimmer.client.meta.Metadata;
-//import org.babyfish.jimmer.client.meta.Operation;
-//import org.babyfish.jimmer.sql.ast.tuple.Tuple2;
-//import org.jetbrains.annotations.Nullable;
-//import org.springframework.aop.support.AopUtils;
-//import org.springframework.beans.factory.FactoryBean;
-//import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
-//import org.springframework.context.ApplicationContext;
-//import org.springframework.core.DefaultParameterNameDiscoverer;
-//import org.springframework.core.ParameterNameDiscoverer;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//import java.lang.reflect.*;
-//import java.security.Principal;
-//import java.util.ArrayList;
-//import java.util.HashSet;
-//import java.util.List;
-//import java.util.Set;
-//
-//public class MetadataFactoryBean implements FactoryBean<Metadata> {
-//
-//    private static final Set<String> IGNORED_CLASS_NAMES;
-//
-//    private final ApplicationContext ctx;
-//
-//    private final ParameterNameDiscoverer parameterNameDiscoverer;
-//
-//    public MetadataFactoryBean(
-//            ApplicationContext ctx,
-//            ParameterNameDiscoverer parameterNameDiscoverer
-//    ) {
-//        this.ctx = ctx;
-//        this.parameterNameDiscoverer =
-//                parameterNameDiscoverer != null ?
-//                        parameterNameDiscoverer :
-//                        new DefaultParameterNameDiscoverer();
-//    }
-//
-//    @Override
-//    public Class<?> getObjectType() {
-//        return Metadata.class;
-//    }
-//
-//    @Override
-//    public Metadata getObject() {
-//        List<String> packageNames = AutoConfigurationPackages.get(ctx);
-//        List<Class<?>> serviceTypes = new ArrayList<>();
-//        for (Object bean : ctx.getBeansWithAnnotation(RestController.class).values()) {
-//            boolean shouldBeParsed = false;
-//            for (String packageName : packageNames) {
-//                if (bean.getClass().getName().startsWith(packageName + '.')) {
-//                    shouldBeParsed = true;
-//                    break;
-//                }
-//            }
-//            if (shouldBeParsed) {
-//                serviceTypes.add(AopUtils.getTargetClass(bean));
-//            }
-//        }
-//        return org.babyfish.jimmer.client.meta.Metadata
-//                .newBuilder()
-//                .addServiceTypes(serviceTypes)
-//                .setOperationParser(
-//                        new Metadata.OperationParser() {
-//                            @Override
-//                            public Tuple2<String, Operation.HttpMethod> http(AnnotatedElement annotatedElement) {
-//                                if (annotatedElement instanceof Method) {
-//                                    GetMapping getMapping = annotatedElement.getAnnotation(GetMapping.class);
-//                                    if (getMapping != null) {
-//                                        return new Tuple2<>(text(getMapping.value(), getMapping.path()), Operation.HttpMethod.GET);
-//                                    }
-//                                    PostMapping postMapping = annotatedElement.getAnnotation(PostMapping.class);
-//                                    if (postMapping != null) {
-//                                        return new Tuple2<>(text(postMapping.value(), postMapping.path()), Operation.HttpMethod.POST);
-//                                    }
-//                                    PutMapping putMapping = annotatedElement.getAnnotation(PutMapping.class);
-//                                    if (putMapping != null) {
-//                                        return new Tuple2<>(text(putMapping.value(), putMapping.path()), Operation.HttpMethod.PUT);
-//                                    }
-//                                    DeleteMapping deleteMapping = annotatedElement.getAnnotation(DeleteMapping.class);
-//                                    if (deleteMapping != null) {
-//                                        return new Tuple2<>(text(deleteMapping.value(), deleteMapping.path()), Operation.HttpMethod.DELETE);
-//                                    }
-//                                    PatchMapping patchMapping = annotatedElement.getAnnotation(PatchMapping.class);
-//                                    if (patchMapping != null) {
-//                                        return new Tuple2<>(text(patchMapping.value(), patchMapping.path()), Operation.HttpMethod.PATCH);
-//                                    }
-//                                }
-//                                RequestMapping requestMapping = annotatedElement.getAnnotation(RequestMapping.class);
-//                                if (requestMapping != null) {
-//                                    return new Tuple2<>(text(requestMapping.value(), requestMapping.path()),
-//                                            requestMapping.method().length != 0 ?
-//                                                    Operation.HttpMethod.valueOf(requestMapping.method()[0].name()) :
-//                                                    null
-//                                    );
-//                                }
-//                                return null;
-//                            }
-//
-//                            @Override
-//                            public String[] getParameterNames(Method method) {
-//                                return parameterNameDiscoverer.getParameterNames(method);
-//                            }
-//
-//                            @Override
-//                            public KType kotlinType(KFunction<?> function) {
-//                                KType type = function.getReturnType();
-//                                if (JvmClassMappingKt.getKotlinClass(ResponseEntity.class).equals(type.getClassifier())) {
-//                                    return type.getArguments().get(0).getType();
-//                                }
-//                                return type;
-//                            }
-//
-//                            @Override
-//                            public AnnotatedType javaType(Method method) {
-//                                if (method.getReturnType() == ResponseEntity.class) {
-//                                    return ((AnnotatedParameterizedType)method.getAnnotatedReturnType()).getAnnotatedActualTypeArguments()[0];
-//                                }
-//                                return method.getAnnotatedReturnType();
-//                            }
-//                        }
-//                )
-//                .setParameterParser(
-//                        new org.babyfish.jimmer.client.meta.Metadata.ParameterParser() {
-//                            @Nullable
-//                            @Override
-//                            public Tuple2<String, Boolean> requestParamNameAndNullable(Parameter javaParameter) {
-//                                RequestParam requestParam = javaParameter.getAnnotation(RequestParam.class);
-//                                if (requestParam == null) {
-//                                    return null;
-//                                }
-//                                return new Tuple2<>(
-//                                        notEmpty(requestParam.value(), requestParam.name()),
-//                                        !requestParam.required() || !requestParam.defaultValue().equals(ValueConstants.DEFAULT_NONE)
-//                                );
-//                            }
-//
-//                            @Nullable
-//                            @Override
-//                            public String pathVariableName(Parameter javaParameter) {
-//                                PathVariable pathVariable = javaParameter.getAnnotation(PathVariable.class);
-//                                if (pathVariable == null) {
-//                                    return null;
-//                                }
-//                                return notEmpty(pathVariable.value(), pathVariable.name());
-//                            }
-//
-//                            @Override
-//                            public boolean isRequestBody(Parameter javaParameter) {
-//                                return javaParameter.isAnnotationPresent(RequestBody.class);
-//                            }
-//
-//                            @Override
-//                            public boolean shouldBeIgnored(Parameter javaParameter) {
-//                                return IGNORED_CLASS_NAMES.contains(javaParameter.getType().getName());
-//                            }
-//                        }
-//                )
-//                .build();
-//    }
-//
-//    private static String text(String[] a, String[] b) {
-//        for (String value : a) {
-//            if (!value.isEmpty()) {
-//                return value;
-//            }
-//        }
-//        for (String path : b) {
-//            if (!path.isEmpty()) {
-//                return path;
-//            }
-//        }
-//        return "";
-//    }
-//
-//    private static String notEmpty(String a, String b) {
-//        if (!a.isEmpty()) {
-//            return a;
-//        }
-//        if (!b.isEmpty()) {
-//            return b;
-//        }
-//        return "";
-//    }
-//
-//    static {
-//        Set<String> set = new HashSet<>();
-//        set.add("javax.servlet.http.HttpServletRequest");
-//        set.add("javax.servlet.http.ServletRequest");
-//        set.add("javax.servlet.http.HttpServletResponse");
-//        set.add("javax.servlet.http.ServletResponse");
-//        set.add("jakarta.servlet.http.HttpServletRequest");
-//        set.add("jakarta.servlet.http.ServletRequest");
-//        set.add("jakarta.servlet.http.HttpServletResponse");
-//        set.add("jakarta.servlet.http.ServletResponse");
-//        set.add(MultipartFile.class.getName());
-//        set.add(Principal.class.getName());
-//        IGNORED_CLASS_NAMES = set;
-//    }
-//}
+package org.babyfish.jimmer.spring.client;
+
+import kotlin.reflect.KFunction;
+import kotlin.reflect.KType;
+import org.babyfish.jimmer.client.meta.Metadata;
+import org.babyfish.jimmer.client.meta.Operation;
+import org.babyfish.jimmer.sql.ast.tuple.Tuple2;
+import org.jetbrains.annotations.Nullable;
+import org.noear.solon.annotation.*;
+import org.noear.solon.core.AppContext;
+import org.noear.solon.core.BeanWrap;
+import org.noear.solon.core.handle.Context;
+import org.noear.solon.core.handle.DownloadedFile;
+import org.noear.solon.core.handle.MethodType;
+import org.noear.solon.core.handle.UploadedFile;
+
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class MetadataFactoryBean {
+
+    String DEFAULT_NONE = "\n\t\t\n\t\t\n\uE000\uE001\uE002\n\t\t\t\t\n";
+
+    private static final Set<String> IGNORED_CLASS_NAMES;
+
+    private final AppContext ctx;
+
+
+    public MetadataFactoryBean(AppContext ctx) {
+        this.ctx = ctx;
+    }
+
+    public Metadata getMetadata() {
+        List<Class<?>> serviceTypes = new ArrayList<>();
+        final List<BeanWrap> beanWraps = ctx.beanFind(bw -> bw.clz().isAnnotationPresent(Controller.class));
+
+        for (BeanWrap bean : beanWraps) {
+            serviceTypes.add(bean.clz());
+        }
+        return org.babyfish.jimmer.client.meta.Metadata
+                .newBuilder()
+                .addServiceTypes(serviceTypes)
+                .setOperationParser(
+                        new Metadata.OperationParser() {
+                            @Override
+                            public Tuple2<String, Operation.HttpMethod> http(AnnotatedElement annotatedElement) {
+                                if (annotatedElement instanceof Method) {
+                                    Mapping mapping = annotatedElement.getAnnotation(Mapping.class);
+                                    Get getMapping = annotatedElement.getAnnotation(Get.class);
+                                    if (getMapping != null) {
+                                        return new Tuple2<>(mapping.value(), Operation.HttpMethod.GET);
+                                    }
+                                    Post postMapping = annotatedElement.getAnnotation(Post.class);
+                                    if (postMapping != null) {
+                                        return new Tuple2<>(mapping.value(), Operation.HttpMethod.POST);
+                                    }
+                                    Put putMapping = annotatedElement.getAnnotation(Put.class);
+                                    if (putMapping != null) {
+                                        return new Tuple2<>(mapping.value(), Operation.HttpMethod.PUT);
+                                    }
+                                    Delete deleteMapping = annotatedElement.getAnnotation(Delete.class);
+                                    if (deleteMapping != null) {
+                                        return new Tuple2<>(mapping.value(), Operation.HttpMethod.DELETE);
+                                    }
+                                    Patch patchMapping = annotatedElement.getAnnotation(Patch.class);
+                                    if (patchMapping != null) {
+                                        return new Tuple2<>(mapping.value(), Operation.HttpMethod.PATCH);
+                                    }
+                                }
+                                Mapping requestMapping = annotatedElement.getAnnotation(Mapping.class);
+                                if (requestMapping != null) {
+                                    final MethodType[] method = requestMapping.method();
+                                    final MethodType methodType = method[0];
+                                    final String named = methodType.name();
+                                    return new Tuple2<>(requestMapping.value(),
+                                            Operation.HttpMethod.POST
+                                    );
+                                }
+                                return null;
+                            }
+
+                            @Override
+                            public String[] getParameterNames(Method method) {
+                                Parameter[] parameters = method.getParameters();
+                                String[] parameterNames = new String[parameters.length];
+                                for (int i = 0; i < parameters.length; i++) {
+                                    Parameter param = parameters[i];
+                                    if (!param.isNamePresent()) {
+                                        return null;
+                                    }
+                                    parameterNames[i] = param.getName();
+                                }
+                                return parameterNames;
+                            }
+
+                            @Override
+                            public KType kotlinType(KFunction<?> function) {
+                                return function.getReturnType();
+                            }
+
+                            @Override
+                            public AnnotatedType javaType(Method method) {
+                                return method.getAnnotatedReturnType();
+                            }
+                        }
+                )
+                .setParameterParser(
+                        new org.babyfish.jimmer.client.meta.Metadata.ParameterParser() {
+                            @Nullable
+                            @Override
+                            public Tuple2<String, Boolean> requestParamNameAndNullable(Parameter javaParameter) {
+                                Param requestParam = javaParameter.getAnnotation(Param.class);
+                                if (requestParam == null) {
+                                    return null;
+                                }
+                                return new Tuple2<>(
+                                        notEmpty(requestParam.value(), requestParam.name()),
+                                        !requestParam.required() || !requestParam.defaultValue().equals(DEFAULT_NONE)
+                                );
+                            }
+
+                            @Nullable
+                            @Override
+                            public String pathVariableName(Parameter javaParameter) {
+                                Path pathVariable = javaParameter.getAnnotation(Path.class);
+                                if (pathVariable == null) {
+                                    return null;
+                                }
+                                return notEmpty(pathVariable.value(), pathVariable.name());
+                            }
+
+                            @Override
+                            public boolean isRequestBody(Parameter javaParameter) {
+                                return javaParameter.isAnnotationPresent(Body.class);
+                            }
+
+                            @Override
+                            public boolean shouldBeIgnored(Parameter javaParameter) {
+                                return IGNORED_CLASS_NAMES.contains(javaParameter.getType().getName());
+                            }
+                        }
+                )
+                .build();
+    }
+
+    private static String text(String[] a, String[] b) {
+        for (String value : a) {
+            if (!value.isEmpty()) {
+                return value;
+            }
+        }
+        for (String path : b) {
+            if (!path.isEmpty()) {
+                return path;
+            }
+        }
+        return "";
+    }
+
+    private static String notEmpty(String a, String b) {
+        if (!a.isEmpty()) {
+            return a;
+        }
+        if (!b.isEmpty()) {
+            return b;
+        }
+        return "";
+    }
+
+    static {
+        Set<String> set = new HashSet<>();
+        set.add(Context.class.getName());
+        set.add(UploadedFile.class.getName());
+        set.add(DownloadedFile.class.getName());
+        set.add(Principal.class.getName());
+        IGNORED_CLASS_NAMES = set;
+    }
+}

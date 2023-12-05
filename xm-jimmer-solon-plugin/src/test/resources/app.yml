@@ -18,6 +18,7 @@ jimmer.db:
   client:
     ts:
       path: /my-ts.zip
+      indent: 2
     java-feign:
       base-package: com.myapp.feign
       path: /my-java.zip

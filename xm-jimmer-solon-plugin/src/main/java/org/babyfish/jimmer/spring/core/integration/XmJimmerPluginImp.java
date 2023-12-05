@@ -10,8 +10,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.babyfish.jimmer.client.meta.Metadata;
 import org.babyfish.jimmer.jackson.ImmutableModule;
 import org.babyfish.jimmer.spring.cfg.SqlClientInitializer;
+import org.babyfish.jimmer.spring.client.MetadataFactoryBean;
 import org.babyfish.jimmer.spring.core.JimmerAdapter;
 import org.babyfish.jimmer.spring.core.annotation.Db;
 import org.babyfish.jimmer.spring.core.interceptor.XmCacheInterceptor;
@@ -39,8 +41,12 @@ import org.noear.solon.serialization.jackson.JacksonSerializer;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.fasterxml.jackson.databind.MapperFeature.PROPAGATE_TRANSIENT_MARKER;
 import static com.fasterxml.jackson.databind.MapperFeature.SORT_PROPERTIES_ALPHABETICALLY;
@@ -99,7 +105,7 @@ public class XmJimmerPluginImp implements Plugin {
             }
             final Map<String, JimmerAdapter> dbMap = JimmerAdapterManager.getDbMap();
 
-            final List<JSqlClient> javaSqlClients =new ArrayList<>();
+            final List<JSqlClient> javaSqlClients = new ArrayList<>();
             final List<KSqlClient> kotlinSqlClients = new ArrayList<>();
             for (JimmerAdapter jimmerAdapter : dbMap.values()) {
                 final Object sqlClient = jimmerAdapter.sqlClient();
@@ -130,6 +136,13 @@ public class XmJimmerPluginImp implements Plugin {
         Solon.context().getBeanAsync(CacheService.class, cacheService -> {
             log.info("{} 异步订阅 CacheService, 执行 jimmer 动作", JIMMER_PLUGIN_NAME);
             Solon.context().subWrapsOfType(CacheService.class, new CacheServiceWrapConsumer());
+        });
+
+
+        context.lifecycle(999999 + 2, () -> {
+            final MetadataFactoryBean metadataFactoryBean = new MetadataFactoryBean(context);
+            Metadata metadata = metadataFactoryBean.getMetadata();
+            Solon.context().wrapAndPut(Metadata.class, metadata);
         });
 
         // solon 自带缓存不兼容 jimmer， 在这里重新处理
@@ -251,6 +264,21 @@ public class XmJimmerPluginImp implements Plugin {
     }
 
     private void injectorAddDo(AppContext ctx, VarHolder varH, String annoValue) {
+
+
+        varH.context().getWrapAsync(Metadata.class, (dsBw) -> {
+            final Class<?> varHolderType = varH.getType();
+            if (Metadata.class.isAssignableFrom(varHolderType)) {
+                final Metadata metadata = dsBw.raw();
+                if (metadata != null) {
+                    varH.setValue(metadata);
+                }
+                if (dsBw.typed()) {
+                    dsBw.context().wrapAndPut(Metadata.class, metadata);
+                }
+            }
+        });
+
         if (Utils.isEmpty(annoValue)) {
             // 监听 JimmerAdapter Bean的完成状态
             varH.context().getWrapAsync(JimmerAdapter.class, (dsBw) -> {
@@ -301,4 +329,33 @@ public class XmJimmerPluginImp implements Plugin {
         log.info("{} 插件关闭!", JIMMER_PLUGIN_NAME);
     }
 
+    private static final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private static final Map<String, Metadata> metadataMap = new HashMap<>();
+
+    public static Metadata getOrCreate(AppContext ctx) {
+        Metadata obj;
+
+        Lock lock = readWriteLock.readLock();
+        lock.lock();
+        try {
+            obj = metadataMap.get("");
+        } finally {
+            lock.unlock();
+        }
+
+        if (obj == null) {
+            lock = readWriteLock.writeLock();
+            lock.lock();
+            try {
+                obj = metadataMap.computeIfAbsent("", key -> {
+                    final MetadataFactoryBean metadataFactoryBean = new MetadataFactoryBean(ctx);
+                    return metadataFactoryBean.getMetadata();
+                });
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        return obj;
+    }
 }
